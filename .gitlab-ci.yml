@@ -38,12 +38,11 @@ style-test:
   # allow_failure: true
 
   before_script:
-    - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements_dev.txt   
-    - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pylint-django[with_django]
+    - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements_dev.txt
   script:
     - pycodestyle octs
     - PYCODESTYLE_RET=$?
-    - pylint --load-plugins pylint-django octs
+    - pylint octs
     - PYLINT_RET=$?
     - if [ $PYCODESTYLE_RET \> 0 ]; then exit $PYCODESTYLE_RET; fi;
     - exit $PYLINT_RET
