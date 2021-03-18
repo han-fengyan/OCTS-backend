@@ -39,7 +39,7 @@ style-test:
 
   before_script:
     - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements_dev.txt   
-    - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r pylint-django[with_django]
+    - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pylint-django[with_django]
   script:
     - pycodestyle octs
     - PYCODESTYLE_RET=$?
