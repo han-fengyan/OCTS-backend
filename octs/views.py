@@ -10,7 +10,6 @@ from django.core.exceptions import ValidationError
 def main_view(request):
     return HttpResponse("<html><body>Hello</body></html>")
 
-
 def signup(request):
     def gen_response(code: int, data: str):
         return JsonResponse({
