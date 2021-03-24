@@ -3,3 +3,4 @@ __pycache__
 .coverage
 *.xml
 *.sqlite3
+.idea
