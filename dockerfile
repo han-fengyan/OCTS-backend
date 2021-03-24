@@ -13,3 +13,4 @@ EXPOSE 80
 
 ENV PYTHONUNBUFFERED=true
 
+CMD ["/bin/sh", "run.sh"]
