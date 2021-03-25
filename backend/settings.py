@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'octs.apps.OctsConfig',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -47,6 +48,58 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'corsheaders.middleware.CorsPostCsrfMiddleware',
+]
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+CSRF_TRUSTED_ORIGINS = (
+    '*',
+)
+
+CORS_ALLOWED_ORIGINS = [
+    "https://octs-frontend-justdebugit.app.secoder.net",
+    "https://OCTS-frontend.JustDebugIt.secoder.local",
+    "https://octs-backend-justdebugit.app.secoder.net",
+    "http://localhost:8080",
+    "http://127.0.0.1:8000",
+    "*",
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+    'POKE',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'my-custom-header'
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "https://octs-frontend-justdebugit.app.secoder.net",
+    "https://octs-backend-justdebugit.app.secoder.net",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://octs-frontend-justdebugit.app.secoder.net",
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -77,24 +130,24 @@ DATABASES = {
     #     'ENGINE': 'django.db.backends.sqlite3',
     #     'NAME': BASE_DIR / 'db.sqlite3',
     # }
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
-    #     'NAME': 'octs',  # 数据库名
-    #     'USER': 'octs',  # 账号
-    #     'PASSWORD': 'Ruangong1.',  # 密码
-    #     'HOST': 'OCTS-database.JustDebugIt.secoder.local',  # HOST
-    #     'POST': 3306,  # 端口
-    #     # uthee7xohr6nah6Requ9shaep8Wuk2bu
-    # }
     'default': {
         'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
         'NAME': 'octs',  # 数据库名
-        'USER': 'django',  # 账号
+        'USER': 'octs',  # 账号
         'PASSWORD': 'Ruangong1.',  # 密码
-        'HOST': '82.156.163.109',  # HOST
+        'HOST': 'OCTS-database.JustDebugIt.secoder.local',  # HOST
         'POST': 3306,  # 端口
         # uthee7xohr6nah6Requ9shaep8Wuk2bu
     }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
+    #     'NAME': 'octs',  # 数据库名
+    #     'USER': 'django',  # 账号
+    #     'PASSWORD': 'Ruangong1.',  # 密码
+    #     'HOST': '82.156.163.109',  # HOST
+    #     'POST': 3306,  # 端口
+    #     # uthee7xohr6nah6Requ9shaep8Wuk2bu
+    # }
 }
 
 # Password validation
