@@ -57,6 +57,9 @@ MIDDLEWARE = [
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
+CSRF_TRUSTED_ORIGINS = (
+    '*',
+)
 
 CORS_ALLOWED_ORIGINS = [
     "https://octs-frontend-justdebugit.app.secoder.net",
