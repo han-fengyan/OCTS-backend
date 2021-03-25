@@ -3,6 +3,7 @@ from django.http import JsonResponse, HttpResponse
 import json
 from .models import User
 from django.core.exceptions import ValidationError
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 
