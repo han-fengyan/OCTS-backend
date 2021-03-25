@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'octs.apps.OctsConfig',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -47,6 +48,51 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'corsheaders.middleware.CorsPostCsrfMiddleware',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "https://octs-frontend-justdebugit.app.secoder.net",
+    "https://OCTS-frontend.JustDebugIt.secoder.local",
+    "https://octs-backend-justdebugit.app.secoder.net",
+    "http://localhost:8080",
+    "http://127.0.0.1:8000"
+]
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+    'POKE',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'my-custom-header'
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "https://octs-frontend-justdebugit.app.secoder.net",
+    "https://octs-backend-justdebugit.app.secoder.net",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://octs-frontend-justdebugit.app.secoder.net",
 ]
 
 ROOT_URLCONF = 'backend.urls'
