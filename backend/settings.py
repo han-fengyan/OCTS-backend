@@ -55,6 +55,9 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsPostCsrfMiddleware',
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+
 CORS_ALLOWED_ORIGINS = [
     "https://octs-frontend-justdebugit.app.secoder.net",
     "https://OCTS-frontend.JustDebugIt.secoder.local",
