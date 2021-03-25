@@ -3,6 +3,7 @@ from django.http import JsonResponse, HttpResponse
 import json
 from .models import User
 from django.core.exceptions import ValidationError
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 
@@ -10,6 +11,7 @@ from django.core.exceptions import ValidationError
 def main_view(request):
     return HttpResponse("<html><body>Hello</body></html>")
 
+@csrf_exempt
 def signup(request):
     def gen_response(code: int, data: str):
         return JsonResponse({
@@ -41,7 +43,7 @@ def signup(request):
             user.save()
             return gen_response(201,"sign up successfully")
 
-
+@csrf_exempt
 def login(request):
     def gen_response(code: int, data: str):
         return JsonResponse({
