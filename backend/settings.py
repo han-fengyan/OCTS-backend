@@ -60,7 +60,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://OCTS-frontend.JustDebugIt.secoder.local",
     "https://octs-backend-justdebugit.app.secoder.net",
     "http://localhost:8080",
-    "http://127.0.0.1:8000"
+    "http://127.0.0.1:8000",
+    "*",
 ]
 
 CORS_ALLOW_METHODS = [
