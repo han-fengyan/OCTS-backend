@@ -28,8 +28,11 @@ def signup(request):
             password = json_data['password']
         except Exception as e:
             return gen_response(400, "message is invalid")
+        
+        if username is None or password is None:
+            return gen_response(400, "message is invalid")
 
-            #需要判断是否已经有重复用户名，并将查询结果返回前端
+        #需要判断是否已经有重复用户名，并将查询结果返回前端
         inuser = User.objects.filter(name=username)
         if inuser:
             return gen_response(406,'user has existed')
@@ -47,4 +50,16 @@ def login(request):
         }, status=code)
 
     if request.method == 'POST':
-        pass
+        json_str = request.body.decode()
+        json_data = json.loads(json_str)
+
+        try:
+            user = User.objects.get(name = json_data['username']) 
+        except Exception as e:
+            return gen_response(400, "user doesn't exist")
+
+        if user.password == json_data['password']:
+            return gen_response(201, "login successfully")
+        
+        else:
+            return gen_response(401, "password is wrong!")
