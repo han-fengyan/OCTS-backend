@@ -24,7 +24,7 @@ SECRET_KEY = 'b4%plx)3jko2(bpdrp4!4z+q(i=6t@sc-$vh8cls796z269^#y'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*',]
+ALLOWED_HOSTS = ['*', ]
 
 # Application definition
 
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'octs.apps.OctsConfig',
+    'goods.apps.GoodsConfig',
     'corsheaders',
 ]
 
@@ -48,7 +49,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
 
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -138,7 +138,7 @@ DATABASES = {
         'HOST': 'OCTS-database.JustDebugIt.secoder.local',  # HOST
         'POST': 3306,  # 端口
         # uthee7xohr6nah6Requ9shaep8Wuk2bu
-    }
+    },
     # 'default': {
     #     'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
     #     'NAME': 'octs',  # 数据库名
@@ -146,7 +146,6 @@ DATABASES = {
     #     'PASSWORD': 'Ruangong1.',  # 密码
     #     'HOST': '82.156.163.109',  # HOST
     #     'POST': 3306,  # 端口
-    #     # uthee7xohr6nah6Requ9shaep8Wuk2bu
     # }
 }
 
