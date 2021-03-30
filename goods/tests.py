@@ -37,14 +37,6 @@ class GoodTest(TestCase):
         }, ensure_ascii=False), content_type="application/json")
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
 
-    def test_binary_pic_upload(self):
-        with open('commodities/1.jpg') as pic:
-            response = self.client.post('/upload/', data=json.dumps(
-                dict(title='江山图', introduction='是一幅名贵的画', store=3, sell=0,
-                     old_price=199.9, new_price=3.5, picture=pic), ensure_ascii=False),
-                content_type="application/json")
-            assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
-
     def test_get_upload(self):
         response = self.client.get('/upload/')
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
