@@ -4,3 +4,5 @@ __pycache__
 *.xml
 *.sqlite3
 .idea
+.DS_Store
+migrations
