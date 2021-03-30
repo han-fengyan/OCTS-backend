@@ -11,7 +11,7 @@ class Good(models.Model):
     quantities_sold = models.IntegerField(default=0)
     price = models.FloatField()
     discount = models.FloatField(default=0)
-    pictures = models.ImageField(upload_to='commodities/')
+    pictures_link = models.ImageField(upload_to='commodities/')
     # pictures_url = models.CharField(max_length=650)
 
     def __str__(self):

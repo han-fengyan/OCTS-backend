@@ -28,7 +28,6 @@ def add(request):
             ori_price = json_data['old_price']
             cur_price = json_data['new_price']
             pic_url = json_data['picture']
-            print(pic_url)
             if len(name) > 100:
                 return gen_response(HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE,
                                     "name too long")
@@ -45,8 +44,8 @@ def add(request):
         except KeyError as exception:
             available = True
         good = Good(name=name, desc=description, quantities_of_inventory=quantities_of_inventory,
-                     quantities_sold=quantities_sold, price=ori_price, discount=cur_price,
-                     pictures_link=pic_url, available=available)
+                    quantities_sold=quantities_sold, price=ori_price, discount=cur_price,
+                    pictures_link=pic_url, available=available)
         good.save()
         return gen_response(HTTPStatus.OK, "product no%d added" % good.id)
     else:
