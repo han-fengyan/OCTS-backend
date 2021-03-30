@@ -36,8 +36,24 @@ class GoodTest(TestCase):
             'picture': '/commodities/',
         }, ensure_ascii=False), content_type="application/json")
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        # test invalid json
+        response = self.client.post('/upload/', {
+            'title': '江山图',
+            'introduction': '是一幅名贵的画',
+            'store': 3,
+            'sell': 0,
+            'old_price': 199.9,
+            'new_price': 3.5,
+            'picture': '/commodities/',
+        }, content_type="application/json")
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.BAD_REQUEST
 
     def test_get_upload(self):
         response = self.client.get('/upload/')
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
 
+    def test_get_list(self):
+        response = self.client.get('/list/')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.post('/list/')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED

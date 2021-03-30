@@ -54,8 +54,18 @@ def add(request):
 
 
 def products_list(request):
+    """
+    return products_list with all available products to consumers
+    """
     if request.method == 'GET':
-        products = Goods.objects.filter(available=True)
+        products = list(Good.objects.filter(available=True))
+        jsons_list = [
+            json.dumps(dict(title=product.name, introduction=product.desc, old_price=product.price,
+                            new_price=product.discount, sell=product.quantities_sold,
+                            store=product.quantities_of_inventory), ensure_ascii=False)
+            for product in products
+        ]
+        return gen_response(HTTPStatus.OK, jsons_list)
     else:
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "please get all of our products")
 

@@ -67,7 +67,6 @@ CORS_ALLOWED_ORIGINS = [
     "https://octs-backend-justdebugit.app.secoder.net",
     "http://localhost:8080",
     "http://127.0.0.1:8000",
-    "*",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -91,15 +90,6 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
     'my-custom-header'
-]
-
-CORS_ALLOWED_ORIGINS = [
-    "https://octs-frontend-justdebugit.app.secoder.net",
-    "https://octs-backend-justdebugit.app.secoder.net",
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://octs-frontend-justdebugit.app.secoder.net",
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -132,7 +122,7 @@ DATABASES = {
     # }
     'default': {
         'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
-        'NAME': 'octs',  # 数据库名
+        'NAME': 'OCTS',  # 数据库名
         'USER': 'octs',  # 账号
         'PASSWORD': 'Ruangong1.',  # 密码
         'HOST': 'OCTS-database.JustDebugIt.secoder.local',  # HOST
