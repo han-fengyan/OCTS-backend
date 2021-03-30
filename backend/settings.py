@@ -122,7 +122,7 @@ DATABASES = {
     # }
     'default': {
         'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
-        'NAME': 'OCTS',  # 数据库名
+        'NAME': 'octsdata',  # 数据库名
         'USER': 'octs',  # 账号
         'PASSWORD': 'Ruangong1.',  # 密码
         'HOST': 'OCTS-database.JustDebugIt.secoder.local',  # HOST
