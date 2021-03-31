@@ -54,3 +54,31 @@ class GoodTest(TestCase):
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
         response = self.client.post('/list/')
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
+
+    def test_modify(self):
+        self.client.post('/upload/', data=json.dumps({
+            'title': '江山图',
+            'introduction': '是一幅名贵的画',
+            'store': 3,
+            'sell': 0,
+            'old_price': 199.9,
+            'new_price': 3.5,
+            'picture': '/commodities/',
+            'available': True,
+        }, ensure_ascii=False), content_type="application/json")
+        response = self.client.post('/offshelf/', {
+            'id': 5
+        }, content_type="application/json")
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.post('/offshelf/', {
+            'id1': 1000
+        }, content_type="application/json")
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.NOT_ACCEPTABLE
+        response = self.client.post('/offshelf/', {
+            'id': 1000
+        }, content_type="application/json")
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE
+        response = self.client.post('/offshelf/')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.BAD_REQUEST
+        response = self.client.get('/offshelf/')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
