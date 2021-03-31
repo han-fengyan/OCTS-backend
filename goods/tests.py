@@ -22,9 +22,6 @@ class GoodTest(TestCase):
         }, ensure_ascii=False), content_type="application/json")
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
 
-    def test_fslls(self):
-        self.assertTrue(self.data == 1)
-
     def test_default_available_upload(self):
         response = self.client.post('/upload/', data=json.dumps({
             'title': '江山图',
@@ -44,7 +41,7 @@ class GoodTest(TestCase):
             'sell': 0,
             'old_price': 199.9,
             'new_price': 3.5,
-            'picture': '/commodities/',
+            'pictures': '/commodities/',
         }, content_type="application/json")
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.BAD_REQUEST
 
