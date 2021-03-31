@@ -56,6 +56,16 @@ class GoodTest(TestCase):
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
 
     def test_modify(self):
+        self.client.post('/upload/', data=json.dumps({
+            'title': '江山图',
+            'introduction': '是一幅名贵的画',
+            'store': 3,
+            'sell': 0,
+            'old_price': 199.9,
+            'new_price': 3.5,
+            'picture': '/commodities/',
+            'available': True,
+        }, ensure_ascii=False), content_type="application/json")
         response = self.client.post('/offshelf/', {
             'id': 1
         }, content_type="application/json")

@@ -93,16 +93,18 @@ def remove(request):
         # check id range
         try:
             id = json_data['id']
-            if id <= 0 or id > products.__len__():
-                return gen_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE, 'no product')
         except KeyError as exception:
             return gen_response(HTTPStatus.NOT_ACCEPTABLE, 'pleas specify id')
         # modify availability
-        product = products.filter(id=id)[0]
-        if product.available:
-            product.available = False
-        else:
-            product.available = True
-        return gen_response(HTTPStatus.OK, "on" if product.available else "off")
+        try:
+            product = products.filter(id=id)[0]
+            if product.available:
+                product.available = False
+            else:
+                product.available = True
+            return gen_response(HTTPStatus.OK, "on" if product.available else "off")
+        except Exception as exception:
+            return gen_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE, 'no product')
+
     else:
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "please change your product's settings with post")
