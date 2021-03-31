@@ -67,7 +67,7 @@ class GoodTest(TestCase):
             'available': True,
         }, ensure_ascii=False), content_type="application/json")
         response = self.client.post('/offshelf/', {
-            'id': 1
+            'id': 5
         }, content_type="application/json")
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
         response = self.client.post('/offshelf/', {
