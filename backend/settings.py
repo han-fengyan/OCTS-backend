@@ -24,7 +24,7 @@ SECRET_KEY = 'b4%plx)3jko2(bpdrp4!4z+q(i=6t@sc-$vh8cls796z269^#y'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*',]
+ALLOWED_HOSTS = ['*', ]
 
 # Application definition
 
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'octs.apps.OctsConfig',
+    'goods.apps.GoodsConfig',
     'corsheaders',
 ]
 
@@ -48,7 +49,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
 
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -67,7 +67,6 @@ CORS_ALLOWED_ORIGINS = [
     "https://octs-backend-justdebugit.app.secoder.net",
     "http://localhost:8080",
     "http://127.0.0.1:8000",
-    "*",
 ]
 
 CORS_ALLOW_METHODS = [
@@ -91,15 +90,6 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
     'my-custom-header'
-]
-
-CORS_ALLOWED_ORIGINS = [
-    "https://octs-frontend-justdebugit.app.secoder.net",
-    "https://octs-backend-justdebugit.app.secoder.net",
-]
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://octs-frontend-justdebugit.app.secoder.net",
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -132,13 +122,13 @@ DATABASES = {
     # }
     'default': {
         'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
-        'NAME': 'octs',  # 数据库名
+        'NAME': 'octsdata',  # 数据库名
         'USER': 'octs',  # 账号
         'PASSWORD': 'Ruangong1.',  # 密码
         'HOST': 'OCTS-database.JustDebugIt.secoder.local',  # HOST
         'POST': 3306,  # 端口
         # uthee7xohr6nah6Requ9shaep8Wuk2bu
-    }
+    },
     # 'default': {
     #     'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
     #     'NAME': 'octs',  # 数据库名
@@ -146,7 +136,6 @@ DATABASES = {
     #     'PASSWORD': 'Ruangong1.',  # 密码
     #     'HOST': '82.156.163.109',  # HOST
     #     'POST': 3306,  # 端口
-    #     # uthee7xohr6nah6Requ9shaep8Wuk2bu
     # }
 }
 
