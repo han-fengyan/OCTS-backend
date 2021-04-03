@@ -19,6 +19,3 @@ class Good(models.Model):
 class Picture(models.Model):
     file = models.ImageField(upload_to='pictures/', blank=True, null=True)
     good = models.ForeignKey(Good, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.id
