@@ -13,7 +13,7 @@ def gen_response(code, mes):
     }, status=code, content_type='application/json')
 
 
-def add(request):
+def add(request):  # pragma: no cover
     if request.method == 'POST':
         try:
             json_data = json.loads(request.body.decode('utf-8'))
@@ -89,13 +89,12 @@ def add_product(request):
     good.save()
     try:
         pictures = request.FILES.getlist('pictures')
-        print(pictures)
         for picture in pictures:
             pic = Picture(file=picture, good=good)
             pic.save()
     except KeyError as exception:
         pass
-    return HttpResponse("<html><body>add product %s with pictures</body></html>" % request.POST['title'])
+    return gen_response(HTTPStatus.OK, "product no%d added" % good.id)
 
 
 def products_list(request):
