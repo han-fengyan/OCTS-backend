@@ -102,11 +102,14 @@ def products_list(request):
     return products_list with all available products to consumers
     """
     if request.method == 'GET':
-        products = list(Good.objects.filter(available=True))
+        products = Good.objects.filter(available=True)
         jsons_list = [
-            json.dumps(dict(id=product.id, title=product.name, introduction=product.desc,
-                            old_price=product.price, new_price=product.discount, sell=product.quantities_sold,
-                            store=product.quantities_of_inventory), ensure_ascii=False)
+            dict(id=product.id, title=product.name, introduction=product.desc,
+                 old_price=product.price, new_price=product.discount, sell=product.quantities_sold,
+                 store=product.quantities_of_inventory,
+                 pictures=[
+                     picture.file for picture in product.picture_set.all()
+                 ])
             for product in products
         ]
         return gen_response(HTTPStatus.OK, jsons_list)
@@ -117,9 +120,12 @@ def products_list(request):
 def all_products(request):
     if request.method == 'GET':
         json_list = [
-            json.dumps(dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
-                            new_price=product.discount, sell=product.quantities_sold,
-                            store=product.quantities_of_inventory, available=product.available), ensure_ascii=False)
+            dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
+                 new_price=product.discount, sell=product.quantities_sold,
+                 store=product.quantities_of_inventory, available=product.available,
+                 pictures=[
+                     picture.file for picture in product.picture_set.all()
+                 ])
             for product in Good.objects.all()
         ]
         return gen_response(HTTPStatus.OK, json_list)
@@ -128,11 +134,50 @@ def all_products(request):
 
 
 def detail(request, id):
-    return HttpResponse("<html><body>Get for commodities detail %d</body></html>" % id)
+    product = Good.objects.get(id=id)
+    return gen_response(HTTPStatus.OK, dict(id=product.id, title=product.name, introduction=product.desc,
+                                            old_price=product.price, new_price=product.discount,
+                                            sell=product.quantities_sold,
+                                            store=product.quantities_of_inventory, available=product.available,
+                                            pictures=[
+                                                picture.file for picture in product.picture_set.all()
+                                            ]))
 
 
-def modify(request, id):
-    return HttpResponse("<html><body>modifying product No.%d</body></html>" % id)
+def modify(request):
+    if request.method != 'POST':
+        return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, '')
+    try:
+        id = request.POST['id']
+        product = Good.objects.get(id=id)
+        product.delete()
+    except Exception as e:
+        return gen_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE, '')
+
+    try:  # 从表单中拿出数据
+        name = request.POST["title"]
+        description = request.POST["introduction"]
+        quantities_of_inventory = request.POST["store"]
+        quantities_sold = request.POST['sell']
+        ori_price = request.POST['old_price']
+        cur_price = request.POST['now_price']
+        available = request.POST['available']
+    except KeyError as exception:
+        return gen_response(HTTPStatus.BAD_REQUEST, "miss key message")
+
+    product = Good(name=name, desc=description, quantities_of_inventory=quantities_of_inventory,
+                   quantities_sold=quantities_sold, price=ori_price, discount=cur_price,
+                   available=available)
+    product.save()
+
+    try:
+        pictures = request.FILES.getlist('pictures')
+        for picture in pictures:
+            pic = Picture(file=picture, good=product)
+            pic.save()
+    except KeyError as exception:
+        pass
+    return gen_response(HTTPStatus.OK, "successfully modify")
 
 
 def on_off_shelf(request):
@@ -150,7 +195,7 @@ def on_off_shelf(request):
             return gen_response(HTTPStatus.NOT_ACCEPTABLE, 'pleas specify id')
         # modify availability
         try:
-            product = products.filter(id=id)[0]
+            product = products.get(id=id)
             product.available = not product.available
             return gen_response(HTTPStatus.OK, "on" if product.available else "off")
         except Exception as exception:
