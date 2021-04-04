@@ -104,3 +104,6 @@ class GoodTest(TestCase):  # pragma: no cover
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.BAD_REQUEST
         response = self.client.get('/status/')
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
+
+    def test_list(self):
+        self.client.get('/list/')

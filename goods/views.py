@@ -107,9 +107,7 @@ def products_list(request):
             dict(id=product.id, title=product.name, introduction=product.desc,
                  old_price=product.price, new_price=product.discount, sell=product.quantities_sold,
                  store=product.quantities_of_inventory,
-                 pictures=[
-                     picture.file for picture in product.picture_set.all()
-                 ])
+                 pictures=[picture.file.url for picture in product.picture_set.all()])
             for product in products
         ]
         return gen_response(HTTPStatus.OK, jsons_list)
@@ -123,9 +121,7 @@ def all_products(request):
             dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
                  new_price=product.discount, sell=product.quantities_sold,
                  store=product.quantities_of_inventory, available=product.available,
-                 pictures=[
-                     picture.file for picture in product.picture_set.all()
-                 ])
+                 pictures=[picture.file.url for picture in product.picture_set.all()])
             for product in Good.objects.all()
         ]
         return gen_response(HTTPStatus.OK, json_list)
@@ -135,13 +131,12 @@ def all_products(request):
 
 def detail(request, id):
     product = Good.objects.get(id=id)
-    return gen_response(HTTPStatus.OK, dict(id=product.id, title=product.name, introduction=product.desc,
-                                            old_price=product.price, new_price=product.discount,
-                                            sell=product.quantities_sold,
-                                            store=product.quantities_of_inventory, available=product.available,
-                                            pictures=[
-                                                picture.file for picture in product.picture_set.all()
-                                            ]))
+    return gen_response(HTTPStatus.OK, dict(
+        id=product.id, title=product.name, introduction=product.desc,
+        old_price=product.price, new_price=product.discount,
+        sell=product.quantities_sold,
+        store=product.quantities_of_inventory, available=product.available,
+        pictures=[picture.file.url for picture in product.picture_set.all()]))
 
 
 def modify(request):
