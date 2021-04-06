@@ -163,9 +163,12 @@ def modify(request):
     except KeyError as exception:
         return gen_response(HTTPStatus.BAD_REQUEST, "miss key message")
 
-    product.update(name=name, desc=description, quantities_of_inventory=quantities_of_inventory,
-                   quantities_sold=quantities_sold, price=ori_price, discount=cur_price,
-                   available=available)
+    product.name = name
+    product.desc = description
+    product.quantities_of_inventory = quantities_of_inventory
+    product.price = ori_price
+    product.discount = cur_price
+    product.available = available
     product.save()
 
     for picture in product.picture_set.all():
