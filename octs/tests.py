@@ -1,6 +1,7 @@
 from django.test import TestCase, Client
 from .models import User
 import json
+import jwt
 # Create your tests here.
 
 
@@ -30,3 +31,32 @@ class MyTest(TestCase):
         response2 = self.client.post('/signup/', data = json.dumps(user2) , content_type = "applaction/json")   
         self.assertJSONEqual(response1.content,{'code':400 ,'data': 'message is invalid'})
         self.assertJSONEqual(response2.content,{'code':400 ,'data': 'message is invalid'})
+    
+    def test_login(self):
+        #正确的用户名和密码
+        Alice = {
+            'username': "Alice",
+            'password': "123456",
+        }
+        #用户存在，密码错误
+        Bob = {
+            'username': 'Bob',
+            'password': "456789"
+        }
+        #用户不存在
+        Charls = {
+            'username':'charls',
+            'password': 'asdasd'
+        }
+        res1 = self.client.post('/login/', data = json.dumps(Alice) , content_type = "applaction/json")
+        res2 = self.client.post('/login/', data = json.dumps(Bob) , content_type = "applaction/json")
+        res3 = self.client.post('/login/', data = json.dumps(Charls) , content_type = "applaction/json")
+
+        res1 = json.loads(res1.content.decode())
+        self.assertEqual(res1['code'],201)
+        self.assertJSONEqual(res2.content,{'code':401 ,'data': "password is wrong!"})
+        self.assertJSONEqual(res3.content,{'code':400 ,'data': "user doesn't exist"})
+
+    def test_token(self):
+        pass
+         

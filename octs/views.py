@@ -2,11 +2,11 @@ from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ValidationError
 from django.views.decorators.csrf import csrf_exempt
 from .models import User
+from django.conf import settings
+import datetime
 import json
 import jwt
-# from rest_framework_jwt.settings import api_settings
 # Create your views here.
-
 
 def main_view(request):
     return HttpResponse("<html><body><center>Hello</center></body></html>")
@@ -56,8 +56,18 @@ def login(request):
             return gen_response(400, "user doesn't exist")
 
         if user.password == json_data['password']:
-            user.token = user.token(self)    
-            return JsonResponse({'code':201, 'data':"login successfully",'token': user.token})
+            #创建token
+            dic = {
+                'exp': datetime.datetime.now() + datetime.timedelta(days=1), #过期时间
+                'iat': datetime.datetime.now(),#开始时间
+                'username': user.name
+            }
+            s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256').decode()
+            # user.token = jwt.encode(dic, 'secret', algorithm='HS256')
+            user.token = s
+            user.save()
+            return JsonResponse({'code':201, 'data':"login successfully",'token': s})
+                    
         else:
             return gen_response(401, "password is wrong!")
 
