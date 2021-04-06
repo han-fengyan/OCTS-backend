@@ -1,6 +1,5 @@
 from django.db import models
 from django.forms import ModelForm
-import jwt
 
 # Create your models here.
 
