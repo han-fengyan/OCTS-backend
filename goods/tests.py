@@ -107,3 +107,4 @@ class GoodTest(TestCase):  # pragma: no cover
 
     def test_list(self):
         self.client.get('/list/')
+        self.client.get('/products/')
