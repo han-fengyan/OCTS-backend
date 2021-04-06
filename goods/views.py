@@ -76,7 +76,7 @@ def add_product(request):
     except Exception as exception:
         return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid")
     try:  # 判断商品是否上架，默认上架
-        available = request.POST['available']
+        available = True if request.POST['available'] == "true" else False
     except KeyError as exception:
         available = True
 
@@ -168,7 +168,7 @@ def modify(request):
     product.quantities_of_inventory = quantities_of_inventory
     product.price = ori_price
     product.discount = cur_price
-    product.available = available
+    product.available = True if available == "true" else False
     product.save()
 
     for picture in product.picture_set.all():
