@@ -9,7 +9,7 @@ import jwt
 # Create your views here.
 
 def main_view(request):
-    return HttpResponse("<html><body><center>Hello</center></body></html>")
+    return HttpResponse("<html><body>Hello</body></html>")
 
 def gen_response(code: int, data: str):
         return JsonResponse({
@@ -28,7 +28,7 @@ def signup(request):
             json_data = json.loads(json_str)
             username = json_data['username']
             password = json_data['password']
-        except ValueError:
+        except Exception as e:
             return gen_response(400, "message is invalid")
         
         if username is None or password is None:
@@ -52,7 +52,7 @@ def login(request):
 
         try:
             user = User.objects.get(name = json_data['username']) 
-        except LookupError:
+        except Exception as e:
             return gen_response(400, "user doesn't exist")
 
         if user.password == json_data['password']:
@@ -66,11 +66,12 @@ def login(request):
             # s = s.decode()
             user.token = s
             user.save()
-            return JsonResponse({'code':201, 'data':"login successfully",'token': s, 'money': user.money})
+            return JsonResponse({'code':201, 'data':"login successfully",'token': s , 'money': user.money})
                     
         else:
             return gen_response(401, "password is wrong!")
 
 def order(requset):
+
     if request.method == 'POST':
         pass

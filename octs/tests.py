@@ -65,7 +65,7 @@ class MyTest(TestCase):
             'password': "123456",
         }
         res = self.client.post('/login/', data = json.dumps(Alice) , content_type = "applaction/json")
-        res = json.loads(res1.content.decode())
+        res = json.loads(res.content.decode())
         s = res['token']
         s = jwt.decode(s, settings.SECRET_KEY, algorithms=['HS256'])  
         self.assertTrue(s['exp']>s['iat'])
