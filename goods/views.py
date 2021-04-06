@@ -130,13 +130,16 @@ def all_products(request):
 
 
 def detail(request, id):
-    product = Good.objects.get(id=id)
-    return gen_response(HTTPStatus.OK, dict(
-        id=product.id, title=product.name, introduction=product.desc,
-        old_price=product.price, now_price=product.discount,
-        sell=product.quantities_sold,
-        store=product.quantities_of_inventory, available=product.available,
-        pictures=[picture.file.url for picture in product.picture_set.all()]))
+    try:
+        product = Good.objects.get(id=id)
+        return gen_response(HTTPStatus.OK, dict(
+            id=product.id, title=product.name, introduction=product.desc,
+            old_price=product.price, now_price=product.discount,
+            sell=product.quantities_sold,
+            store=product.quantities_of_inventory, available=product.available,
+            pictures=[picture.file.url for picture in product.picture_set.all()]))
+    except Exception as e:
+        return gen_response(HTTPStatus.NOT_FOUND, "product not found")
 
 
 def modify(request):
