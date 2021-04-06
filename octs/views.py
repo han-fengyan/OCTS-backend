@@ -66,7 +66,7 @@ def login(request):
             # s = s.decode()
             user.token = s
             user.save()
-            return JsonResponse({'code':201, 'data':"login successfully",'token': s , 'money': user.money})
+            return JsonResponse({'code':201, 'data':"login successfully",'token': s , 'money': user.money, 'name':user.name)
                     
         else:
             return gen_response(401, "password is wrong!")
