@@ -76,7 +76,7 @@ def add_product(request):
     except Exception as exception:
         return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid")
     try:  # 判断商品是否上架，默认上架
-        available = request.POST['available']
+        available = True if request.POST['available'] == "true" else False
     except KeyError as exception:
         available = True
 
@@ -105,7 +105,7 @@ def products_list(request):
         products = Good.objects.filter(available=True)
         jsons_list = [
             dict(id=product.id, title=product.name, introduction=product.desc,
-                 old_price=product.price, new_price=product.discount, sell=product.quantities_sold,
+                 old_price=product.price, now_price=product.discount, sell=product.quantities_sold,
                  store=product.quantities_of_inventory,
                  pictures=[picture.file.url for picture in product.picture_set.all()])
             for product in products
@@ -119,7 +119,7 @@ def all_products(request):
     if request.method == 'GET':
         json_list = [
             dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
-                 new_price=product.discount, sell=product.quantities_sold,
+                 now_price=product.discount, sell=product.quantities_sold,
                  store=product.quantities_of_inventory, available=product.available,
                  pictures=[picture.file.url for picture in product.picture_set.all()])
             for product in Good.objects.all()
@@ -130,13 +130,16 @@ def all_products(request):
 
 
 def detail(request, id):
-    product = Good.objects.get(id=id)
-    return gen_response(HTTPStatus.OK, dict(
-        id=product.id, title=product.name, introduction=product.desc,
-        old_price=product.price, new_price=product.discount,
-        sell=product.quantities_sold,
-        store=product.quantities_of_inventory, available=product.available,
-        pictures=[picture.file.url for picture in product.picture_set.all()]))
+    try:
+        product = Good.objects.get(id=id)
+        return gen_response(HTTPStatus.OK, dict(
+            id=product.id, title=product.name, introduction=product.desc,
+            old_price=product.price, now_price=product.discount,
+            sell=product.quantities_sold,
+            store=product.quantities_of_inventory, available=product.available,
+            pictures=[picture.file.url for picture in product.picture_set.all()]))
+    except Exception as e:
+        return gen_response(HTTPStatus.NOT_FOUND, "product not found")
 
 
 def modify(request):
@@ -145,7 +148,7 @@ def modify(request):
     try:
         id = request.POST['id']
         product = Good.objects.get(id=id)
-        product.delete()
+        # product.delete()
     except Exception as e:
         return gen_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE, '')
 
@@ -160,10 +163,16 @@ def modify(request):
     except KeyError as exception:
         return gen_response(HTTPStatus.BAD_REQUEST, "miss key message")
 
-    product = Good(name=name, desc=description, quantities_of_inventory=quantities_of_inventory,
-                   quantities_sold=quantities_sold, price=ori_price, discount=cur_price,
-                   available=available)
+    product.name = name
+    product.desc = description
+    product.quantities_of_inventory = quantities_of_inventory
+    product.price = ori_price
+    product.discount = cur_price
+    product.available = True if available == "true" else False
     product.save()
+
+    for picture in product.picture_set.all():
+        picture.delete()
 
     try:
         pictures = request.FILES.getlist('pictures')
@@ -192,6 +201,7 @@ def on_off_shelf(request):
         try:
             product = products.get(id=id)
             product.available = not product.available
+            product.save()
             return gen_response(HTTPStatus.OK, "on" if product.available else "off")
         except Exception as exception:
             return gen_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE, 'no product with id %d' % id)
