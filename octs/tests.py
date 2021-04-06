@@ -1,4 +1,5 @@
 from django.test import TestCase, Client
+from django.conf import settings
 from .models import User
 import json
 import jwt
@@ -59,5 +60,12 @@ class MyTest(TestCase):
         self.assertJSONEqual(res3.content,{'code':400 ,'data': "user doesn't exist"})
 
     def test_token(self):
-        pass
-         
+        Alice = {
+            'username': "Alice",
+            'password': "123456",
+        }
+        res = self.client.post('/login/', data = json.dumps(Alice) , content_type = "applaction/json")
+        res = json.loads(res.content.decode())
+        s = res['token']
+        s = jwt.decode(s, settings.SECRET_KEY, algorithms=['HS256'])  
+        self.assertTrue(s['exp']>s['iat'])
