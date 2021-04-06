@@ -1,5 +1,7 @@
 from django.db import models
 from django.forms import ModelForm
+import jwt
+
 # Create your models here.
 
 class User(models.Model):
@@ -7,7 +9,8 @@ class User(models.Model):
     register_date = models.DateTimeField(auto_now_add=True)
     password = models.CharField(max_length = 500)
     money = models.FloatField(default=10000)
-    
+    token = models.CharField(max_length =500,default=None,null=True)
+
     def __str__(self):
         return self.name
 

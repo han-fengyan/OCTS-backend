@@ -1,24 +1,24 @@
-from django.shortcuts import render
 from django.http import JsonResponse, HttpResponse
-import json
-from .models import User
 from django.core.exceptions import ValidationError
 from django.views.decorators.csrf import csrf_exempt
-
+from .models import User
+from django.conf import settings
+import datetime
+import json
+import jwt
 # Create your views here.
 
-
 def main_view(request):
-    return HttpResponse("<html><body>Hello</body></html>")
+    return HttpResponse("<html><body><center>Hello</center></body></html>")
 
-@csrf_exempt
-def signup(request):
-    def gen_response(code: int, data: str):
+def gen_response(code: int, data: str):
         return JsonResponse({
             'code': code,
             'data': data
         }, status=code)
 
+@csrf_exempt
+def signup(request):
     if request.method == 'POST':
         request_data =request.body
         json_str = request_data.decode()
@@ -45,12 +45,7 @@ def signup(request):
 
 @csrf_exempt
 def login(request):
-    def gen_response(code: int, data: str):
-        return JsonResponse({
-            'code': code,
-            'data': data
-        }, status=code)
-
+    
     if request.method == 'POST':
         json_str = request.body.decode()
         json_data = json.loads(json_str)
@@ -61,7 +56,22 @@ def login(request):
             return gen_response(400, "user doesn't exist")
 
         if user.password == json_data['password']:
-            return gen_response(201, "login successfully")
-        
+            #创建token
+            dic = {
+                'exp': datetime.datetime.now() + datetime.timedelta(days=1), #过期时间
+                'iat': datetime.datetime.now(),#开始时间
+                'username': user.name
+            }
+            s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256')
+            # s = s.decode()
+            user.token = s
+            user.save()
+            return JsonResponse({'code':201, 'data':"login successfully",'token': s})
+                    
         else:
             return gen_response(401, "password is wrong!")
+
+def order(requset):
+
+    if request.method == 'POST':
+        pass
