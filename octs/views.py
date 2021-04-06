@@ -2,6 +2,7 @@ from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ValidationError
 from django.views.decorators.csrf import csrf_exempt
 from .models import User
+
 from django.conf import settings
 import datetime
 import json
@@ -66,7 +67,7 @@ def login(request):
             # s = s.decode()
             user.token = s
             user.save()
-            return JsonResponse({'code':201, 'data':"login successfully",'token': s , 'money': user.money, 'name':user.name)
+            return JsonResponse({'code':201, 'data':"login successfully",'token': s , 'money': user.money, 'name':user.nam})
                     
         else:
             return gen_response(401, "password is wrong!")
