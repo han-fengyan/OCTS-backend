@@ -63,7 +63,7 @@ def login(request):
                 'username': user.name
             }
             s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256')
-            s = s.decode()
+            # s = s.decode()
             user.token = s
             user.save()
             return JsonResponse({'code':201, 'data':"login successfully",'token': s, 'money': user.money})
