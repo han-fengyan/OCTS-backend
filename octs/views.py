@@ -1,7 +1,9 @@
 from django.http import JsonResponse, HttpResponse
+from http import HTTPStatus
 from django.core.exceptions import ValidationError
 from django.views.decorators.csrf import csrf_exempt
-from .models import User
+from .models import User, Coupon
+from goods.models import Good, Picture
 
 from django.conf import settings
 import datetime
@@ -64,7 +66,8 @@ def login(request):
                 'username': user.name
             }
             s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256')
-            # s = s.decode()
+            #在git上下面这一句要注释掉
+            s = s.decode()
             user.token = s
             user.save()
             return JsonResponse({'code':201, 'data':"login successfully",'token': s , 'money': user.money, 'name':user.name})
@@ -72,7 +75,55 @@ def login(request):
         else:
             return gen_response(401, "password is wrong!")
 
-def order(requset):
-
+def order(request):
+    #禁止使用get来下单
+    if request.method != 'POST':
+        return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,
+                            "please place your order with post")
+    
     if request.method == 'POST':
-        pass
+        #是否为json表单
+        try:
+            json_data = json.loads(request.body.decode('utf-8'))
+        except ValueError as exception:
+            return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype") 
+        
+        #判断前端发来的数据是否合法
+        try:
+            username = json_data['username']
+            goodid = json_data['goodid']
+            count = json_data['count']
+
+        except KeyError as exception:
+            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
+        except Exception as exception:
+            return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid")    
+        #判断数据库是否有该用户或者商品
+        try:
+            user = User.objects.get(name = username)    
+            good = Good.objects.get(id = goodid)
+        except Exception as exception:
+            return gen_response(HTTPStatus.BAD_REQUEST, "user or good doesn't exist") 
+        
+        #判断商品是否上架
+        if good.available is False:
+            return gen_response(406, "the good is off shelf") 
+
+        #判断商品存货、用户余额
+        money = user.money
+        now_price = good.discount
+        if money < now_price * count :
+            return gen_response(406, "money is not enough")
+        if count > good.quantities_of_inventory:
+            return gen_response(406, "quantity of goods is not enough")
+        #更新商品与用户信息
+        good.quantities_of_inventory -= count
+        good.quantities_sold += count
+        good.save()
+        print(good.id,good.name,good.quantities_of_inventory,good.quantities_sold)
+
+        user.money -= count * now_price
+        user.save()
+        return gen_response(200, "you have bought the goods successfully")
+
+        #如何更新订单列表
