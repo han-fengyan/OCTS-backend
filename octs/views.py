@@ -67,7 +67,7 @@ def login(request):
             }
             s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256')
             #在git上下面这一句要注释掉
-            s = s.decode()
+            # s = s.decode()
             user.token = s
             user.save()
             return JsonResponse({'code':201, 'data':"login successfully",'token': s , 'money': user.money, 'name':user.name})
