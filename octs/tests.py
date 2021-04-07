@@ -1,6 +1,8 @@
 from django.test import TestCase, Client
 from django.conf import settings
-from .models import User
+from .models import User, Coupon
+from goods.models import Good, Picture
+from http import HTTPStatus
 import json
 import jwt
 # Create your tests here.
@@ -8,10 +10,19 @@ import jwt
 
 class MyTest(TestCase):
     def setUp(self) -> None:
-        self.data = 1
         alice = User.objects.create(name="Alice", password="123456")
         bob = User.objects.create(name="Bob", password="123456")
-
+        self.client.post('/upload/', data={
+            'title': '江山图',
+            'introduction': '是一幅名贵的画',
+            'store': 3,
+            'sell': 0,
+            'old_price': 199.9,
+            'now_price': 3.5,
+            'available': True,
+        })
+        Good.objects.create(name="name", desc="description", quantities_of_inventory=3,
+                quantities_sold=4, price=17, discount=15, available=True)
         
     def test_add_new_user(self):
         user = {
@@ -69,3 +80,41 @@ class MyTest(TestCase):
         s = res['token']
         s = jwt.decode(s, settings.SECRET_KEY, algorithms=['HS256'])  
         self.assertTrue(s['exp']>s['iat'])
+        self.assertTrue(s['exp']<s['iat']+86401)
+
+    def test_place_order(self):
+        alice = User.objects.get(name = 'Alice')
+        test_good = Good.objects.get(name= 'name')
+        print(test_good.id,test_good.desc)
+        order = {
+            'username': 'Alice',
+            'goodid': test_good.id,
+            'count' : 1
+        }
+        wrong_name = {
+            'username': 'alice',
+            'goodid': test_good.id,
+            'count' : 1
+        }
+        wrong_id = {
+            'username': 'Alice',
+            'goodid': -1,
+            'count' : 1
+        }
+        wrong_count = {
+            'username': 'Alice',
+            'goodid': test_good.id,
+            'count' : 100
+        }
+        res = self.client.get('/order/')
+        self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],HTTPStatus.METHOD_NOT_ALLOWED)
+        res1 = self.client.post('/order/',data=order)
+        self.assertEqual(json.loads(res1.content.decode('utf-8'))['code'],HTTPStatus.BAD_REQUEST)
+        res2 = self.client.post('/order/',data=json.dumps(order),content_type = "applaction/json")
+        self.assertEqual(json.loads(res2.content.decode('utf-8'))['code'],200)
+        alice = User.objects.get(name = 'Alice') 
+        test_good = Good.objects.get(name= 'name')
+        self.assertEqual(test_good.quantities_of_inventory,2)
+        self.assertEqual(test_good.quantities_sold,5)
+        self.assertEqual(alice.money, 9985)
+        
