@@ -73,6 +73,7 @@ def login(request):
         else:
             return gen_response(401, "password is wrong!")
 
+@csrf_exempt
 def order(request):
     #禁止使用get来下单
     if request.method != 'POST':
