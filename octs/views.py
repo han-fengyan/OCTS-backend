@@ -111,6 +111,7 @@ def order(request):
         #判断商品存货、用户余额
         money = user.money
         now_price = good.discount
+        return gen_response(200, "you have bought the goods successfully")
         if money < now_price * count :
             return gen_response(406, "money is not enough")
         else : 
