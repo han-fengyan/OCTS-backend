@@ -2,11 +2,11 @@ from django.http import JsonResponse, HttpResponse
 from http import HTTPStatus
 from django.core.exceptions import ValidationError
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Coupon
+from .models import User, Coupon , UserOrder
 from goods.models import Good, Picture
 
 from django.conf import settings
-import datetime
+import datetime,time,random
 import json
 import jwt
 # Create your views here.
@@ -122,6 +122,8 @@ def order(request):
 
         user.money -= count * now_price
         user.save()
+        id = str(int(time.time())) + str(random.randint(10,99)) + str(goodid) + str(random.randint(10,99)) 
+        UserOrder.objects.create(user=user, orderid=id, name=good.name, count=count )
         return gen_response(200, "you have bought the goods successfully")
 
-        #如何更新订单列表
+        #更新订单列表
