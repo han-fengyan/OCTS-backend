@@ -66,8 +66,6 @@ def login(request):
                 'username': user.name
             }
             s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256')
-            #在git上下面这一句要注释掉
-            # s = s.decode()
             user.token = s
             user.save()
             return JsonResponse({'code':201, 'data':"login successfully",'token': s , 'money': user.money, 'name':user.name})
@@ -120,7 +118,6 @@ def order(request):
         good.quantities_of_inventory -= count
         good.quantities_sold += count
         good.save()
-        print(good.id,good.name,good.quantities_of_inventory,good.quantities_sold)
 
         user.money -= count * now_price
         user.save()
