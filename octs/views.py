@@ -118,10 +118,10 @@ def order(request):
         #更新商品与用户信息
         good.quantities_of_inventory -= count
         good.quantities_sold += count
-        good.update()
+        good.save()
 
         user.money -= count * now_price
-        user.update()
+        user.save()
         return gen_response(200, "successfully")
         # id = str(int(time.time())) + str(random.randint(10,99)) + str(goodid) + str(random.randint(10,99)) 
         # UserOrder.objects.create(user=user, orderid=id, name=good.name, count=count )
