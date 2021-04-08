@@ -127,10 +127,8 @@ def modify(request):
     try:
         deleted_pictures = request.POST['delete']
         pictures = deleted_pictures.split('\n')[:-1]
-        print(pictures)
-        # https://octs-backend-justdebugit.app.secoder.net/pic/pictures/1.jpg
         for picture in pictures:
-            url = picture[48:]
+            url = picture[53:]
             try:
                 picture = Picture.objects.get(file=url)
                 picture.delete()
