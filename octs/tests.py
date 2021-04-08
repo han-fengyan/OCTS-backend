@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.conf import settings
-from .models import User, Coupon
+from .models import User, Coupon , UserOrder
 from goods.models import Good, Picture
 from http import HTTPStatus
 import json
