@@ -111,20 +111,18 @@ def order(request):
         #判断商品存货、用户余额
         money = user.money
         now_price = good.discount
-        return gen_response(200, "you have bought the goods successfully")
         if money < now_price * count :
             return gen_response(406, "money is not enough")
-        else : 
-            return gen_response(200, "you have bought the goods successfully")
-        # if count > good.quantities_of_inventory:
-        #     return gen_response(406, "quantity of goods is not enough")
-        # #更新商品与用户信息
-        # good.quantities_of_inventory -= count
-        # good.quantities_sold += count
-        # good.save()
+        if count > good.quantities_of_inventory:
+            return gen_response(406, "quantity of goods is not enough")
+        #更新商品与用户信息
+        good.quantities_of_inventory -= count
+        good.quantities_sold += count
+        good.update()
 
-        # user.money -= count * now_price
-        # user.save()
+        user.money -= count * now_price
+        user.update()
+        return gen_response(200, "successfully")
         # id = str(int(time.time())) + str(random.randint(10,99)) + str(goodid) + str(random.randint(10,99)) 
         # UserOrder.objects.create(user=user, orderid=id, name=good.name, count=count )
 
