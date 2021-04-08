@@ -13,53 +13,6 @@ def gen_response(code, mes):
     }, status=code, content_type='application/json')
 
 
-def add(request):  # pragma: no cover
-    if request.method == 'POST':
-        try:
-            json_data = json.loads(request.body.decode('utf-8'))
-        except ValueError as exception:
-            return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype")
-        # 判断前端发来的数据是否合法
-        try:
-            name = json_data['title']
-            description = json_data['introduction']
-            quantities_of_inventory = json_data['store']
-            quantities_sold = json_data['sell']
-            ori_price = json_data['old_price']
-            cur_price = json_data['now_price']
-            if len(name) > 100:
-                return gen_response(HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE,
-                                    "name too long")
-            if len(description) > 1000:
-                return gen_response(HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE,
-                                    "description too long")
-        except KeyError as exception:
-            return gen_response(HTTPStatus.BAD_REQUEST, "miss key message")
-        except Exception as exception:
-            return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid")
-        try:
-            available = json_data['available']
-        except KeyError as exception:
-            available = True
-        good = Good(name=name, desc=description, quantities_of_inventory=quantities_of_inventory,
-                    quantities_sold=quantities_sold, price=ori_price, discount=cur_price,
-                    available=available)
-        good.save()
-
-        try:
-            pictures = request.FILES.getlist('pictures')
-            print(pictures)
-            for picture in pictures:
-                pic = Picture(file=picture, good=good)
-                pic.save()
-        except KeyError as exception:
-            pass
-
-        return gen_response(HTTPStatus.OK, "product no%d added" % good.id)
-    else:
-        return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "please post your new product")
-
-
 def add_product(request):
     if request.method != 'POST':
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,
@@ -160,7 +113,7 @@ def modify(request):
         ori_price = request.POST['old_price']
         cur_price = request.POST['now_price']
         available = request.POST['available']
-    except KeyError as exception:
+    except KeyError:
         return gen_response(HTTPStatus.BAD_REQUEST, "miss key message")
 
     product.name = name
@@ -171,15 +124,25 @@ def modify(request):
     product.available = True if available == "true" else False
     product.save()
 
-    for picture in product.picture_set.all():
-        picture.delete()
+    try:
+        deleted_pictures = request.POST['delete']
+        pictures = deleted_pictures.split('\n')[:-1]
+        for picture in pictures:
+            url = picture[53:]
+            try:
+                picture = Picture.objects.get(file=url)
+                picture.delete()
+            except Exception:
+                pass
+    except KeyError:
+        pass
 
     try:
         pictures = request.FILES.getlist('pictures')
         for picture in pictures:
             pic = Picture(file=picture, good=product)
             pic.save()
-    except KeyError as exception:
+    except KeyError:
         pass
     return gen_response(HTTPStatus.OK, "successfully modify")
 
