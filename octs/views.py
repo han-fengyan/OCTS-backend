@@ -113,6 +113,8 @@ def order(request):
         now_price = good.discount
         if money < now_price * count :
             return gen_response(406, "money is not enough")
+        else : 
+            return gen_response(200, "you have bought the goods successfully")
         # if count > good.quantities_of_inventory:
         #     return gen_response(406, "quantity of goods is not enough")
         # #更新商品与用户信息
@@ -124,7 +126,6 @@ def order(request):
         # user.save()
         # id = str(int(time.time())) + str(random.randint(10,99)) + str(goodid) + str(random.randint(10,99)) 
         # UserOrder.objects.create(user=user, orderid=id, name=good.name, count=count )
-        return gen_response(200, "you have bought the goods successfully")
 
 # @csrf_exempt
 # def userorder(request):
