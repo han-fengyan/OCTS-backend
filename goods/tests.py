@@ -11,16 +11,6 @@ class GoodTest(TestCase):  # pragma: no cover
     def setUp(self) -> None:
         self.data = 1
         self.client = Client(HTTP_USER_AGENT='Mozilla/5.0')
-        # response = self.client.post('/upload/', data=json.dumps({
-        #     'title': '江山图',
-        #     'introduction': '是一幅名贵的画',
-        #     'store': 3,
-        #     'sell': 0,
-        #     'old_price': 199.9,
-        #     'new_price': 3.5,
-        #     'picture': '/commodities/',
-        #     'available': False,
-        # }, ensure_ascii=False), content_type="application/json")
 
     def test_upload(self):
         response = self.client.post('/upload/', data={
@@ -77,8 +67,12 @@ class GoodTest(TestCase):  # pragma: no cover
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
         response = self.client.post('/list/')
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
+        response = self.client.get('/products/')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.post('/products/')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
 
-    def test_modify(self):
+    def test_shelf(self):
         self.client.post('/upload/', data={
             'title': '江山图',
             'introduction': '是一幅名贵的画',
@@ -105,6 +99,66 @@ class GoodTest(TestCase):  # pragma: no cover
         response = self.client.get('/status/')
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
 
-    def test_list(self):
-        self.client.get('/list/')
-        self.client.get('/products/')
+    def test_detail(self):
+        self.client.post('/upload/', data={
+            'title': '江山图',
+            'introduction': '是一幅名贵的画',
+            'store': 3,
+            'sell': 0,
+            'old_price': 199.9,
+            'now_price': 3.5,
+            'available': True,
+        })
+        self.client.get('/details/1')
+        self.client.get('/details/2')
+        self.client.get('/details/5')
+
+    def test_modify(self):
+        self.client.post('/upload/', data={
+            'title': '江山图',
+            'introduction': '是一幅名贵的画',
+            'store': 3,
+            'sell': 0,
+            'old_price': 199.9,
+            'now_price': 3.5,
+            'available': True,
+        })
+        self.client.get('/modify/')
+        self.client.post('/modify/', data={
+            'id': 1,
+            'title': '画卷图',
+            'introduction': '是名贵的画',
+            'store': 3,
+            'sell': 0,
+            'old_price': 203.9,
+            'now_price': 4.5,
+            'available': True,
+            'delete': '',
+        })
+        self.client.post('/modify/', data={
+            'id': 1,
+            'title': '画卷图',
+            'introduction': '是名贵的画',
+            'store': 3,
+            'sell': 0,
+            'old_price': 203.9,
+            'now_price': 4.5,
+            'available': True,
+        })
+        self.client.post('/modify/', data={
+            'id': 1,
+            'introduction': '是名贵的画',
+            'store': 3,
+            'sell': 0,
+            'old_price': 203.9,
+            'now_price': 4.5,
+            'available': True,
+        })
+        self.client.post('/modify/', data={
+            'introduction': '是名贵的画',
+            'store': 3,
+            'sell': 0,
+            'old_price': 203.9,
+            'now_price': 4.5,
+            'available': True,
+        })
