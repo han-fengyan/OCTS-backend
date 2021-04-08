@@ -85,7 +85,6 @@ class MyTest(TestCase):
     def test_place_order(self):
         alice = User.objects.get(name = 'Alice')
         test_good = Good.objects.get(name= 'name')
-        print(test_good.id,test_good.desc)
         order = {
             'username': 'Alice',
             'goodid': test_good.id,

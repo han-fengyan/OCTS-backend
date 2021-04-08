@@ -14,4 +14,4 @@ class User(models.Model):
         return self.name
 
 class Coupon(models.Model):
-    pass
+    pass    
