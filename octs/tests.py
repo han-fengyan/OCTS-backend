@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.conf import settings
-from .models import User, Coupon , UserOrder
+from .models import User, Coupon 
 from goods.models import Good, Picture
 from http import HTTPStatus
 import json
@@ -116,4 +116,5 @@ class MyTest(TestCase):
         self.assertEqual(test_good.quantities_of_inventory,2)
         self.assertEqual(test_good.quantities_sold,5)
         self.assertEqual(alice.money, 9985)
-        
+        # res = self.client.get('/userorder/',data=json.dumps({'username':'Alice'}))
+        # print(json.loads(res.content.decode('utf-8')))
