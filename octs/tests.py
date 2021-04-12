@@ -24,6 +24,8 @@ class MyTest(TestCase):
         Good.objects.create(name="name", desc="description", quantities_of_inventory=3,
                 quantities_sold=4, price=17, discount=15, available=True)
         
+
+
     def test_add_new_user(self):
         user = {
             'username': "Marry",
@@ -120,7 +122,7 @@ class MyTest(TestCase):
         orderlist = Order.objects.filter(user=alice)
         
 
-    def test_user_order(self):
+    def test_user_order_and_orderlist(self):
         alice = User.objects.get(name = 'Alice')
         test_good = Good.objects.get(name= 'name')
         order = {
@@ -128,10 +130,20 @@ class MyTest(TestCase):
             'goodid': test_good.id,
             'count' : 1
         }
+        order1 = {
+            'username': 'Alice',
+            'goodid': test_good.id,
+            'count' : 2
+        }
         self.client.post('/order/',data=json.dumps(order),content_type = "applaction/json")
+        self.client.post('/order/',data=json.dumps(order1),content_type = "applaction/json")
         data = {
             'username':'Alice',
         }
         res = self.client.post('/userorder/', data=json.dumps(data),content_type = "applaction/json")
         for order in json.loads(res.content.decode())['data']:
             self.assertEqual(order['name'],test_good.name)
+
+        res = self.client.get('/orderlist/')
+        for order in json.loads(res.content.decode())['data']:
+             self.assertEqual(order['user'],"Alice")

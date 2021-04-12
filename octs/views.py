@@ -159,3 +159,25 @@ def userorder(request):
 
     return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please place your order with post")
 
+@csrf_exempt
+def orderlist(request):
+    if request.method == 'GET':
+        #检验商家身份》待做
+        orderlist = Order.objects.all()
+        # for order in orderlist.order_by('-id'):
+        #    print(order.user.name)
+        return gen_response(200, [
+                {
+                    'user': order.user.name,
+                    'orderid': order.orderid,
+                    'goodid': order.goodid,
+                    'name': order.name,
+                    'count': order.count,
+                    'cost': order.cost,
+                    'date': int(order.pub_date.timestamp()),
+                    'state': order.state,
+                }
+
+             
+                for order in orderlist.order_by('-id')
+            ])
