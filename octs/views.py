@@ -2,7 +2,7 @@ from django.http import JsonResponse, HttpResponse
 from http import HTTPStatus
 from django.core.exceptions import ValidationError
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Coupon 
+from .models import User, Coupon ,Order
 from goods.models import Good, Picture
 
 from django.conf import settings
@@ -122,38 +122,62 @@ def order(request):
 
         user.money -= count * now_price
         user.save()
-        return gen_response(200, "successfully")
-        # id = str(int(time.time())) + str(random.randint(10,99)) + str(goodid) + str(random.randint(10,99)) 
-        # UserOrder.objects.create(user=user, orderid=id, name=good.name, count=count )
+        id = str(int(time.time())) + str(random.randint(10,99)) + str(goodid) + str(random.randint(10,99)) 
+        Order.objects.create(user=user, orderid=id, goodid=goodid, name=good.name, count=count, cost = count * now_price , state = 0)
+        return gen_response(200, "you have bought the goods successfully")
 
-# @csrf_exempt
-# def userorder(request):
-#     if request.method == 'GET':
-#         try:
-#             json_data = json.loads(request.body.decode('utf-8'))
+@csrf_exempt
+def userorder(request):
+    if request.method == 'POST':
+        try:
+            json_data = json.loads(request.body.decode('utf-8'))
 
-#         except ValueError as exception:
-#             return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype") 
+        except ValueError as exception:
+            return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype") 
         
-#         try:
-#             user = json_data['username']
+        try:
+            user = json_data['username']
             
-#         except KeyError as exception:
-#             return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
-#         except Exception as exception:
-#             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
+        except KeyError as exception:
+            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
+        except Exception as exception:
+            return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
 
-#         orderlist = UserOrder.objects.filter(user=user)
-#         return gen_response(200, [
-#                 {
-#                     'name': order.name,
-#                     'count': order.count,
-#                     'orderid': order.orderid,
-#                     'date': int(order.pub_date.timestamp())
-#                 }
-#                 for order in orderlist.order_by('-id')
-#             ])
+        user = User.objects.get(name=user)
+        orderlist = Order.objects.filter(user=user)
+        return gen_response(200, [
+                {
+                    'name': order.name,
+                    'count': order.count,
+                    'orderid': order.orderid,
+                    'cost': order.cost,
+                    'date': int(order.pub_date.timestamp()),
+                    'state': order.state,
+                }
+                for order in orderlist.order_by('-id')
+            ])
 
-#     return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,
-#                             "please place your order with post")
+    return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please place your order with post")
 
+@csrf_exempt
+def orderlist(request):
+    if request.method == 'GET':
+        #检验商家身份》待做
+        orderlist = Order.objects.all()
+        # for order in orderlist.order_by('-id'):
+        #    print(order.user.name)
+        return gen_response(200, [
+                {
+                    'user': order.user.name,
+                    'orderid': order.orderid,
+                    'goodid': order.goodid,
+                    'name': order.name,
+                    'count': order.count,
+                    'cost': order.cost,
+                    'date': int(order.pub_date.timestamp()),
+                    'state': order.state,
+                }
+
+             
+                for order in orderlist.order_by('-id')
+            ])

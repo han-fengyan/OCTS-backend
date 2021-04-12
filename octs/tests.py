@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.conf import settings
-from .models import User, Coupon 
+from .models import User, Coupon ,Order
 from goods.models import Good, Picture
 from http import HTTPStatus
 import json
@@ -24,6 +24,8 @@ class MyTest(TestCase):
         Good.objects.create(name="name", desc="description", quantities_of_inventory=3,
                 quantities_sold=4, price=17, discount=15, available=True)
         
+
+
     def test_add_new_user(self):
         user = {
             'username': "Marry",
@@ -116,5 +118,32 @@ class MyTest(TestCase):
         self.assertEqual(test_good.quantities_of_inventory,2)
         self.assertEqual(test_good.quantities_sold,5)
         self.assertEqual(alice.money, 9985)
-        # res = self.client.get('/userorder/',data=json.dumps({'username':'Alice'}))
-        # print(json.loads(res.content.decode('utf-8')))
+
+        orderlist = Order.objects.filter(user=alice)
+        
+
+    def test_user_order_and_orderlist(self):
+        alice = User.objects.get(name = 'Alice')
+        test_good = Good.objects.get(name= 'name')
+        order = {
+            'username': 'Alice',
+            'goodid': test_good.id,
+            'count' : 1
+        }
+        order1 = {
+            'username': 'Alice',
+            'goodid': test_good.id,
+            'count' : 2
+        }
+        self.client.post('/order/',data=json.dumps(order),content_type = "applaction/json")
+        self.client.post('/order/',data=json.dumps(order1),content_type = "applaction/json")
+        data = {
+            'username':'Alice',
+        }
+        res = self.client.post('/userorder/', data=json.dumps(data),content_type = "applaction/json")
+        for order in json.loads(res.content.decode())['data']:
+            self.assertEqual(order['name'],test_good.name)
+
+        res = self.client.get('/orderlist/')
+        for order in json.loads(res.content.decode())['data']:
+             self.assertEqual(order['user'],"Alice")
