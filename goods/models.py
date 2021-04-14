@@ -1,5 +1,5 @@
 from django.db import models
-
+from octs.models import Seckill
 # Create your models here.
 
 
@@ -11,7 +11,8 @@ class Good(models.Model):
     quantities_sold = models.IntegerField(default=0)
     price = models.FloatField()
     discount = models.FloatField(default=0)
-
+    seckill  = models.ForeignKey(Seckill, on_delete=models.CASCADE, null=True)
+    
     def __str__(self):
         return self.name
 
