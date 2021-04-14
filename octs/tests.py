@@ -1,6 +1,6 @@
 from django.test import TestCase, Client
 from django.conf import settings
-from .models import User, Coupon ,Order
+from .models import User, Coupon ,Order, Merchant, Seckill
 from goods.models import Good, Picture
 from http import HTTPStatus
 import json
@@ -117,26 +117,28 @@ class MyTest(TestCase):
         test_good = Good.objects.get(name= 'name')
         self.assertEqual(test_good.quantities_of_inventory,2)
         self.assertEqual(test_good.quantities_sold,5)
-        self.assertEqual(alice.money, 9985)
 
         orderlist = Order.objects.filter(user=alice)
         
-
-    def test_user_order_and_orderlist(self):
-        alice = User.objects.get(name = 'Alice')
-        test_good = Good.objects.get(name= 'name')
+    def place_order(self):
         order = {
             'username': 'Alice',
-            'goodid': test_good.id,
+            'goodid': Good.objects.get(name= 'name').id,
             'count' : 1
         }
         order1 = {
             'username': 'Alice',
-            'goodid': test_good.id,
+            'goodid': Good.objects.get(name= 'name').id,
             'count' : 2
         }
         self.client.post('/order/',data=json.dumps(order),content_type = "applaction/json")
         self.client.post('/order/',data=json.dumps(order1),content_type = "applaction/json")
+
+    def test_user_order_and_orderlist(self):
+        alice = User.objects.get(name = 'Alice')
+        test_good = Good.objects.get(name= 'name')
+        
+        self.place_order()
         data = {
             'username':'Alice',
         }
@@ -147,3 +149,30 @@ class MyTest(TestCase):
         res = self.client.get('/orderlist/')
         for order in json.loads(res.content.decode())['data']:
              self.assertEqual(order['user'],"Alice")
+
+    def test_pay(self):
+        alice = User.objects.get(name = 'Alice')
+        self.place_order()
+        order = Order.objects.get(id = 1)
+        data = {
+            'username': 'Alice',
+            'orderid': order.orderid,
+            'cost' : order.cost,
+        }
+        res = self.client.post('/pay/', data=json.dumps(data),content_type = "applaction/json")
+        res = json.loads(res.content.decode())['code']
+        self.assertEqual(res , 200)
+        res = self.client.post('/pay/', data=json.dumps(data),content_type = "applaction/json")
+        res = json.loads(res.content.decode())['data']
+        self.assertEqual(res , "your order has been paid")
+
+        alice.money = 1
+        alice.save()
+
+        self.place_order()
+        order = Order.objects.get(id = 2)
+        res = self.client.post('/pay/', data=json.dumps(data),content_type = "applaction/json")
+        self.assertEqual(json.loads(res.content.decode())['data'],"money is not enough")
+
+        res = self.client.post('/pay/', data=json.dumps({'username':'me'}),content_type = "applaction/json")
+        res = self.client.post('pay/',json.dumps({'username':'se','orderid':1,'cost':1}),content_type = "applaction/json")

@@ -31,7 +31,7 @@ def signup(request):
             json_data = json.loads(json_str)
             username = json_data['username']
             password = json_data['password']
-        except Exception as e:
+        except Exception :
             return gen_response(400, "message is invalid")
         
         if username is None or password is None:
@@ -55,7 +55,7 @@ def login(request):
 
         try:
             user = User.objects.get(name = json_data['username']) 
-        except Exception as e:
+        except Exception :
             return gen_response(400, "user doesn't exist")
 
         if user.password == json_data['password']:
@@ -84,7 +84,7 @@ def order(request):
         #是否为json表单
         try:
             json_data = json.loads(request.body.decode('utf-8'))
-        except ValueError as exception:
+        except ValueError :
             return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype") 
         
         #判断前端发来的数据是否合法
@@ -120,11 +120,58 @@ def order(request):
         good.quantities_sold += count
         good.save()
 
-        user.money -= count * now_price
-        user.save()
+        # user.money -= count * now_price
+        # user.save()
         id = str(int(time.time())) + str(random.randint(10,99)) + str(goodid) + str(random.randint(10,99)) 
         Order.objects.create(user=user, orderid=id, goodid=goodid, name=good.name, count=count, cost = count * now_price , state = 0)
         return gen_response(200, "you have bought the goods successfully")
+
+
+@csrf_exempt
+def pay(request):
+    if request.method != 'POST':
+        return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,
+                        "please place your order with post")
+    
+    if request.method == 'POST':
+        #是否为json表单
+        try:
+            json_data = json.loads(request.body.decode('utf-8'))
+        except ValueError as exception:
+            return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype")
+        
+        #判断前端发来的数据是否合法
+        try:
+            username = json_data['username']
+            orderid = json_data['orderid']
+            cost = json_data['cost']
+
+        except KeyError as exception:
+            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
+        except Exception as exception:
+            return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid")  
+        
+        #判断数据库是否有该用户或者商品
+        try:
+            user = User.objects.get(name = username)    
+            order = Order.objects.get(orderid = orderid)
+        except Exception as exception:
+            return gen_response(HTTPStatus.BAD_REQUEST, "user or order doesn't exist") 
+        
+        if user.money < cost :
+            return gen_response(HTTPStatus.BAD_REQUEST, "money is not enough")
+        
+        if order.state == 0:
+            order.state = 1
+            order.save()
+        else:
+            return gen_response(HTTPStatus.BAD_REQUEST,"your order has been paid")
+
+        user.money -= cost
+        user.save()
+
+        return gen_response(200,"you have paid successfully")
+
 
 @csrf_exempt
 def userorder(request):
