@@ -153,8 +153,7 @@ class MyTest(TestCase):
     def test_pay(self):
         alice = User.objects.get(name = 'Alice')
         self.place_order()
-        order = Order.objects.get(id = 1)
-
+        order = Order.objects.first()
         data = {
             'username': 'Alice',
             'orderid': order.orderid,
@@ -184,6 +183,8 @@ class MyTest(TestCase):
             'orderid' :Order.objects.get(id =1).orderid,
             'change' : 2
         }
+        for order in Order.objects.all():
+            print(order.id)
         order = Order.objects.filter(orderid = data['orderid'])
         
         res = self.client.post('/orderstate/', data=json.dumps(data),content_type = "applaction/json")
