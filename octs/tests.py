@@ -122,12 +122,12 @@ class MyTest(TestCase):
     def place_order(self):
         order = {
             'username': 'Alice',
-            'goodid': Good.objects.get(name= 'name').id,
+            'goodid': Good.objects.get(name='name').id,
             'count' : 1
         }
         order1 = {
             'username': 'Alice',
-            'goodid': Good.objects.get(name= 'name').id,
+            'goodid': Good.objects.get(name='name').id,
             'count' : 2
         }
         self.client.post('/order/',data=json.dumps(order),content_type = "applaction/json")
@@ -154,6 +154,7 @@ class MyTest(TestCase):
         alice = User.objects.get(name = 'Alice')
         self.place_order()
         order = Order.objects.get(id = 1)
+
         data = {
             'username': 'Alice',
             'orderid': order.orderid,
