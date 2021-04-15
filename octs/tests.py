@@ -170,8 +170,6 @@ class MyTest(TestCase):
         alice.save()
 
         self.place_order()
-        for order in Order.objects.all():
-            print(order.id)
         order = Order.objects.filter(id = 2)
         res = self.client.post('/pay/', data=json.dumps(data),content_type = "applaction/json")
         self.assertEqual(json.loads(res.content.decode())['data'],"money is not enough")
