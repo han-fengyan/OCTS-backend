@@ -122,9 +122,9 @@ def order(request):
 
         # user.money -= count * now_price
         # user.save()
-        id = str(int(time.time())) + str(random.randint(10,99)) + str(goodid) + str(random.randint(10,99)) 
+        id = str(time.time())[6:10]+str(time.time())[11:18] + str(random.randint(10,99)) + str(goodid) + str(random.randint(10,99)) 
         Order.objects.create(user=user, orderid=id, goodid=goodid, name=good.name, count=count, cost = count * now_price , state = 0)
-        return gen_response(200, "you have bought the goods successfully")
+        return gen_response(200, id)
 
 
 @csrf_exempt
@@ -197,6 +197,7 @@ def userorder(request):
                     'name': order.name,
                     'count': order.count,
                     'orderid': order.orderid,
+                    'goodid': order.goodid,
                     'cost': order.cost,
                     'date': int(order.pub_date.timestamp()),
                     'state': order.state,
@@ -211,8 +212,6 @@ def orderlist(request):
     if request.method == 'GET':
         #检验商家身份》待做
         orderlist = Order.objects.all()
-        # for order in orderlist.order_by('-id'):
-        #    print(order.user.name)
         return gen_response(200, [
                 {
                     'user': order.user.name,
@@ -228,3 +227,31 @@ def orderlist(request):
              
                 for order in orderlist.order_by('-id')
             ])
+
+def orderstate(request):
+    if request.method == 'POST':
+        try:
+            json_data = json.loads(request.body.decode('utf-8'))
+
+        except ValueError as exception:
+            return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype") 
+        
+        try:
+            orderid = json_data['orderid']
+            change = json_data['change']
+
+        except KeyError as exception:
+            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
+        except Exception as exception:
+            return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
+
+        try:
+            order = Order.objects.get(orderid = orderid)
+        except Exception as exception:
+            return gen_response(HTTPStatus.BAD_REQUEST, "order doesn't exist")   
+
+        order.state = change
+        order.save()
+        return gen_response(200,"you have modify the order successfully")
+
+    return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please modify an order with post")

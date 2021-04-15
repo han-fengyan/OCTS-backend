@@ -10,4 +10,5 @@ urlpatterns = [
     path('userorder/',views.userorder,name='userorder'),
     path('orderlist/',views.orderlist,name='orderlist'),
     path('pay/', views.pay,name='pay'),
+    path('orderstate/',views.orderstate),
 ]
