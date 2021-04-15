@@ -117,22 +117,22 @@ class MyTest(TestCase):
         test_good = Good.objects.get(name= 'name')
         self.assertEqual(test_good.quantities_of_inventory,2)
         self.assertEqual(test_good.quantities_sold,5)
-
         orderlist = Order.objects.filter(user=alice)
         
     def place_order(self):
         order = {
             'username': 'Alice',
-            'goodid': Good.objects.get(name= 'name').id,
+            'goodid': Good.objects.get(name='name').id,
             'count' : 1
         }
         order1 = {
             'username': 'Alice',
-            'goodid': Good.objects.get(name= 'name').id,
+            'goodid': Good.objects.get(name='name').id,
             'count' : 2
         }
         self.client.post('/order/',data=json.dumps(order),content_type = "applaction/json")
         self.client.post('/order/',data=json.dumps(order1),content_type = "applaction/json")
+
 
     def test_user_order_and_orderlist(self):
         alice = User.objects.get(name = 'Alice')
@@ -153,7 +153,7 @@ class MyTest(TestCase):
     def test_pay(self):
         alice = User.objects.get(name = 'Alice')
         self.place_order()
-        order = Order.objects.get(id = 1)
+        order = Order.objects.first()
         data = {
             'username': 'Alice',
             'orderid': order.orderid,
@@ -170,9 +170,21 @@ class MyTest(TestCase):
         alice.save()
 
         self.place_order()
-        order = Order.objects.get(id = 2)
+        order = Order.objects.filter(id = 2)
         res = self.client.post('/pay/', data=json.dumps(data),content_type = "applaction/json")
         self.assertEqual(json.loads(res.content.decode())['data'],"money is not enough")
 
         res = self.client.post('/pay/', data=json.dumps({'username':'me'}),content_type = "applaction/json")
         res = self.client.post('pay/',json.dumps({'username':'se','orderid':1,'cost':1}),content_type = "applaction/json")
+
+    def test_order_state(self):
+        self.place_order()
+        data={
+            'orderid' :Order.objects.get(id =1).orderid,
+            'change' : 2
+        }
+     
+        order = Order.objects.filter(orderid = data['orderid'])
+        
+        res = self.client.post('/orderstate/', data=json.dumps(data),content_type = "applaction/json")
+        self.assertEqual(json.loads(res.content.decode())['code'],200)
