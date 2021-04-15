@@ -228,6 +228,7 @@ def orderlist(request):
                 for order in orderlist.order_by('-id')
             ])
 
+@csrf_exempt
 def orderstate(request):
     if request.method == 'POST':
         try:
