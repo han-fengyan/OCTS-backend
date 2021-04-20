@@ -162,3 +162,18 @@ class GoodTest(TestCase):  # pragma: no cover
             'now_price': 4.5,
             'available': True,
         })
+
+    def test_search(self):
+        response = self.client.get("/search/", data={
+            'key': '江山'
+        })
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.get("/searchcanary/", data={
+            'key': '江山'
+        })
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.post("/search/")
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
+        response = self.client.post("/searchcanary/")
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
+

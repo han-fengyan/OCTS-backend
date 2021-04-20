@@ -1,6 +1,6 @@
 from django.http import JsonResponse, HttpResponse
 from http import HTTPStatus
-from .models import Good, Picture
+from .models import Good, Picture, Category, Keyword
 import json
 import jieba
 
@@ -27,8 +27,7 @@ def add_product(request):
         cur_price = request.POST['now_price']
     except KeyError:
         return gen_response(HTTPStatus.BAD_REQUEST, "miss key message")
-    except Exception:
-        return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid")
+
     try:  # 判断商品是否上架，默认上架
         available = True if request.POST['available'] == "true" else False
     except KeyError:
@@ -200,5 +199,7 @@ def advanced_search(request):
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "")
     keyword = request.GET['key']
     key_list = jieba.cut_for_search(keyword)
+    products = Good.objects.filter(name__contains=keyword)
+    return products_lists_response(products)
 
 

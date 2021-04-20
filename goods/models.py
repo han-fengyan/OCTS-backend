@@ -29,7 +29,7 @@ class Category(models.Model):
         return self.name
 
 
-class Keywords(models.Model):
+class Keyword(models.Model):
     keyword = models.CharField(max_length=100)
     products = models.ManyToManyField(Good)
 
