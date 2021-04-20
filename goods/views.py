@@ -1,6 +1,7 @@
 from django.http import JsonResponse, HttpResponse
 from http import HTTPStatus
-from .models import Good, Picture, Category, Keyword
+from .models import Good, Picture, Category, Keyword, Favourite
+from octs.models import User
 import json
 import jieba
 
@@ -50,20 +51,38 @@ def add_product(request):
     return gen_response(HTTPStatus.OK, "product no%d added" % good.id)
 
 
+def collect(request):
+    if request.method == 'POST':
+        pass
+    else:
+        return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "please post your favourites")
+
+
 def products_list(request):
     """
     return products_list with all available products to consumers
     """
     if request.method == 'GET':
+        json_data = json.loads(request.body.decode('utf-8'))
+        favourites = None
+        try:
+            user = User.objects.get(name=json_data['username'])
+            favourites = user.favourite.goods.all()
+        except KeyError as e:
+            pass
         products = Good.objects.filter(available=True)
         jsons_list = [
             dict(id=product.id, title=product.name, introduction=product.desc,
                  old_price=product.price, now_price=product.discount, sell=product.quantities_sold,
                  store=product.quantities_of_inventory,
-                 pictures=[picture.file.url for picture in product.picture_set.all()])
+                 pictures=[picture.file.url for picture in product.picture_set.all()],
+                 liked=favourites is not None and product in favourites
+                 )
             for product in products
         ]
         return gen_response(HTTPStatus.OK, jsons_list)
+    # elif request.method == 'POST':
+    #     pass
     else:
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "please get all of our products")
 
@@ -91,7 +110,7 @@ def detail(request, id):
             sell=product.quantities_sold,
             store=product.quantities_of_inventory, available=product.available,
             pictures=[picture.file.url for picture in product.picture_set.all()]))
-    except Exception as e:
+    except Exception:
         return gen_response(HTTPStatus.NOT_FOUND, "product not found")
 
 
@@ -99,10 +118,10 @@ def modify(request):
     if request.method != 'POST':
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, '')
     try:
-        id = request.POST['id']
-        product = Good.objects.get(id=id)
+        product_i = request.POST['id']
+        product = Good.objects.get(id=product_i)
         # product.delete()
-    except Exception as e:
+    except Exception:
         return gen_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE, '')
 
     try:  # 从表单中拿出数据
@@ -199,7 +218,7 @@ def advanced_search(request):
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "")
     keyword = request.GET['key']
     key_list = jieba.cut_for_search(keyword)
+    for key in key_list:
+        pass
     products = Good.objects.filter(name__contains=keyword)
     return products_lists_response(products)
-
-
