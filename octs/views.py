@@ -11,10 +11,7 @@ import json
 import jwt
 # Create your views here.
 
-def main_view(request):
-    return HttpResponse("<html><body>Hello</body></html>")
-
-def gen_response(code: int, data: str):
+def gen_response(code, data):
         return JsonResponse({
             'code': code,
             'data': data
@@ -93,15 +90,15 @@ def order(request):
             goodid = json_data['goodid']
             count = json_data['count']
 
-        except KeyError as exception:
+        except KeyError:
             return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
-        except Exception as exception:
+        except Exception:
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid")    
         #判断数据库是否有该用户或者商品
         try:
             user = User.objects.get(name = username)    
             good = Good.objects.get(id = goodid)
-        except Exception as exception:
+        except Exception:
             return gen_response(HTTPStatus.BAD_REQUEST, "user or good doesn't exist") 
         
         #判断商品是否上架
@@ -120,11 +117,9 @@ def order(request):
         good.quantities_sold += count
         good.save()
 
-        # user.money -= count * now_price
-        # user.save()
-        id = str(time.time())[6:10]+str(time.time())[11:18] + str(random.randint(10,99)) + str(goodid) + str(random.randint(10,99)) 
-        Order.objects.create(user=user, orderid=id, goodid=goodid, name=good.name, count=count, cost = count * now_price , state = 0)
-        return gen_response(200, id)
+        number = str(time.time())[0:10]+str(time.time())[11:18] + str(random.randint(10000,99999)) + str(goodid) + str(random.randint(10000,99999)) 
+        Order.objects.create(user=user, orderid=number, goodid=goodid, name=good.name, count=count, cost = count * now_price , state = 0)
+        return gen_response(200, number)
 
 
 @csrf_exempt
@@ -137,7 +132,7 @@ def pay(request):
         #是否为json表单
         try:
             json_data = json.loads(request.body.decode('utf-8'))
-        except ValueError as exception:
+        except ValueError:
             return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype")
         
         #判断前端发来的数据是否合法
@@ -146,16 +141,16 @@ def pay(request):
             orderid = json_data['orderid']
             cost = json_data['cost']
 
-        except KeyError as exception:
+        except KeyError :
             return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
-        except Exception as exception:
+        except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid")  
         
         #判断数据库是否有该用户或者商品
         try:
             user = User.objects.get(name = username)    
             order = Order.objects.get(orderid = orderid)
-        except Exception as exception:
+        except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "user or order doesn't exist") 
         
         if user.money < cost :
@@ -179,31 +174,26 @@ def userorder(request):
         try:
             json_data = json.loads(request.body.decode('utf-8'))
 
-        except ValueError as exception:
+        except ValueError :
             return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype") 
         
         try:
             user = json_data['username']
             
-        except KeyError as exception:
+        except KeyError :
             return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
-        except Exception as exception:
+        except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
 
         user = User.objects.get(name=user)
         orderlist = Order.objects.filter(user=user)
-        return gen_response(200, [
-                {
-                    'name': order.name,
-                    'count': order.count,
-                    'orderid': order.orderid,
-                    'goodid': order.goodid,
-                    'cost': order.cost,
-                    'date': int(order.pub_date.timestamp()),
-                    'state': order.state,
-                }
-                for order in orderlist.order_by('-id')
-            ])
+
+        return gen_response(HTTPStatus.OK, [
+            dict(orderid= order.orderid,goodid=order.goodid,name=order.name,
+                count=order.count,cost=order.cost,date=int(order.pub_date.timestamp()),state=order.state,
+                pictures=[picture.file.url for picture in Good.objects.get(id=order.goodid).picture_set.all()])
+            for order in orderlist.order_by('-id')
+        ])
 
     return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please place your order with post")
 
@@ -212,21 +202,12 @@ def orderlist(request):
     if request.method == 'GET':
         #检验商家身份》待做
         orderlist = Order.objects.all()
-        return gen_response(200, [
-                {
-                    'user': order.user.name,
-                    'orderid': order.orderid,
-                    'goodid': order.goodid,
-                    'name': order.name,
-                    'count': order.count,
-                    'cost': order.cost,
-                    'date': int(order.pub_date.timestamp()),
-                    'state': order.state,
-                }
-
-             
-                for order in orderlist.order_by('-id')
-            ])
+        return gen_response(HTTPStatus.OK, [
+            dict(user=order.user.name,orderid= order.orderid,goodid=order.goodid,name=order.name,
+                count=order.count,cost=order.cost,date=int(order.pub_date.timestamp()),state=order.state,
+                pictures=[picture.file.url for picture in Good.objects.get(id=order.goodid).picture_set.all()])
+            for order in orderlist.order_by('-id')
+        ])
 
 @csrf_exempt
 def orderstate(request):
@@ -234,21 +215,21 @@ def orderstate(request):
         try:
             json_data = json.loads(request.body.decode('utf-8'))
 
-        except ValueError as exception:
+        except ValueError :
             return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype") 
         
         try:
             orderid = json_data['orderid']
             change = json_data['change']
 
-        except KeyError as exception:
+        except KeyError :
             return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
-        except Exception as exception:
+        except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
 
         try:
             order = Order.objects.get(orderid = orderid)
-        except Exception as exception:
+        except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "order doesn't exist")   
 
         order.state = change

@@ -1,7 +1,8 @@
 from django.http import JsonResponse, HttpResponse
 from http import HTTPStatus
-from .models import Good, Picture
+from .models import Good, Picture, Category, Keyword
 import json
+import jieba
 
 
 # Create your views here.
@@ -24,13 +25,12 @@ def add_product(request):
         quantities_sold = request.POST['sell']
         ori_price = request.POST['old_price']
         cur_price = request.POST['now_price']
-    except KeyError as exception:
+    except KeyError:
         return gen_response(HTTPStatus.BAD_REQUEST, "miss key message")
-    except Exception as exception:
-        return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid")
+
     try:  # 判断商品是否上架，默认上架
         available = True if request.POST['available'] == "true" else False
-    except KeyError as exception:
+    except KeyError:
         available = True
 
     good = Good(name=name, desc=description, quantities_of_inventory=quantities_of_inventory,
@@ -45,7 +45,7 @@ def add_product(request):
         for picture in pictures:
             pic = Picture(file=picture, good=good)
             pic.save()
-    except KeyError as exception:
+    except KeyError:
         pass
     return gen_response(HTTPStatus.OK, "product no%d added" % good.id)
 
@@ -151,14 +151,14 @@ def on_off_shelf(request):
     if request.method == 'POST':
         try:
             json_data = json.loads(request.body.decode('utf-8'))
-        except ValueError as exception:
+        except ValueError:
             return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype")
 
         products = Good.objects.all()
         # check id range
         try:
             id = json_data['id']
-        except KeyError as exception:
+        except KeyError:
             return gen_response(HTTPStatus.NOT_ACCEPTABLE, 'pleas specify id')
         # modify availability
         try:
@@ -166,8 +166,40 @@ def on_off_shelf(request):
             product.available = not product.available
             product.save()
             return gen_response(HTTPStatus.OK, "on" if product.available else "off")
-        except Exception as exception:
+        except Exception:
             return gen_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE, 'no product with id %d' % id)
 
     else:
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "please change your product's settings with post")
+
+
+def products_lists_response(products):
+    if products is not None:
+        return gen_response(HTTPStatus.OK, [
+            dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
+                 now_price=product.discount, sell=product.quantities_sold,
+                 store=product.quantities_of_inventory, available=product.available,
+                 pictures=[picture.file.url for picture in product.picture_set.all()])
+            for product in products
+        ])
+    else:
+        return gen_response(HTTPStatus.OK, [])
+
+
+def search(request):
+    if request.method != 'GET':
+        return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "")
+    keyword = request.GET['key']
+    products = Good.objects.filter(name__contains=keyword)
+    return products_lists_response(products)
+
+
+def advanced_search(request):
+    if request.method != 'GET':
+        return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "")
+    keyword = request.GET['key']
+    key_list = jieba.cut_for_search(keyword)
+    products = Good.objects.filter(name__contains=keyword)
+    return products_lists_response(products)
+
+
