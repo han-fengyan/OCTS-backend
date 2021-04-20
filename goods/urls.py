@@ -6,7 +6,7 @@ from . import views
 
 urlpatterns = [
     path('upload/', csrf_exempt(views.add_product)),
-    path('products/', views.products_list),
+    path('products/', csrf_exempt(views.products_list)),
     path('list/', views.all_products),
     path('details/<int:id>', views.detail),
     path('modify/', csrf_exempt(views.modify)),
@@ -14,4 +14,5 @@ urlpatterns = [
     path('search/', views.search),
     path('searchcanary/', views.advanced_search),
     path('favourite/', csrf_exempt(views.collect_favourite)),
+    path('myfavourites/', views.my_favourites),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -15,6 +15,19 @@ def gen_response(code, mes):
     }, status=code, content_type='application/json')
 
 
+def products_lists_response(products):
+    if products is not None:
+        return gen_response(HTTPStatus.OK, [
+            dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
+                 now_price=product.discount, sell=product.quantities_sold,
+                 store=product.quantities_of_inventory, available=product.available,
+                 pictures=[picture.file.url for picture in product.picture_set.all()])
+            for product in products
+        ])
+    else:
+        return gen_response(HTTPStatus.OK, [])
+
+
 def add_product(request):
     if request.method != 'POST':
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,
@@ -58,17 +71,29 @@ def collect_favourite(request):
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "please post your favourites")
 
 
+def my_favourites(request):
+    if request.method != 'GET':
+        pass
+    username = request.GET['username']
+    user = User.objects.get(name=username)
+    try:
+        product_list = user.favourite.goods.all()
+        return products_lists_response(product_list)
+    except Exception:
+        return products_lists_response(None)
+
+
 def products_list(request):
     """
     return products_list with all available products to consumers
     """
-    if request.method == 'GET':
+    if request.method == 'POST':
         json_data = json.loads(request.body.decode('utf-8'))
         favourites = None
         try:
             user = User.objects.get(name=json_data['username'])
             favourites = user.favourite.goods.all()
-        except KeyError as e:
+        except Exception as e:
             pass
         products = Good.objects.filter(available=True)
         jsons_list = [
@@ -81,10 +106,19 @@ def products_list(request):
             for product in products
         ]
         return gen_response(HTTPStatus.OK, jsons_list)
-    # elif request.method == 'POST':
-    #     pass
+    elif request.method == 'GET':
+        products = Good.objects.filter(available=True)
+        jsons_list = [
+            dict(id=product.id, title=product.name, introduction=product.desc,
+                 old_price=product.price, now_price=product.discount, sell=product.quantities_sold,
+                 store=product.quantities_of_inventory,
+                 pictures=[picture.file.url for picture in product.picture_set.all()],
+                 )
+            for product in products
+        ]
+        return gen_response(HTTPStatus.OK, jsons_list)
     else:
-        return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "please get all of our products")
+        return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "used wrong methods")
 
 
 def all_products(request):
@@ -190,19 +224,6 @@ def on_off_shelf(request):
 
     else:
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "please change your product's settings with post")
-
-
-def products_lists_response(products):
-    if products is not None:
-        return gen_response(HTTPStatus.OK, [
-            dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
-                 now_price=product.discount, sell=product.quantities_sold,
-                 store=product.quantities_of_inventory, available=product.available,
-                 pictures=[picture.file.url for picture in product.picture_set.all()])
-            for product in products
-        ])
-    else:
-        return gen_response(HTTPStatus.OK, [])
 
 
 def search(request):
