@@ -1,5 +1,5 @@
 from django.db import models
-from octs.models import Seckill
+from octs.models import Seckill, User
 # Create your models here.
 
 
@@ -35,3 +35,8 @@ class Keyword(models.Model):
 
     def __str__(self):
         return self.keyword
+
+
+class Favourite(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
+    goods = models.ManyToManyField(Good)
