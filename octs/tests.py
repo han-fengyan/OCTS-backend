@@ -15,8 +15,6 @@ class MyTest(TestCase):
         User.objects.create(name="Bob", password="123456")
         Good.objects.create(name="name", desc="description", quantities_of_inventory=3,
                 quantities_sold=4, price=17, discount=15, available=True)
-        test_good = Good.objects.get(name= 'name')
-        print(test_good.id,test_good.quantities_of_inventory)
 
     def test_add_new_user(self):
         user = {
@@ -85,19 +83,19 @@ class MyTest(TestCase):
             'count' : 1
         }
         wrong_name = {
-            'username': 'alice',
+            'username': 'ali',
             'goodid': test_good.id,
             'count' : 1
         }
         wrong_id = {
             'username': 'Alice',
-            'goodid': 10,
+            'goodid': 1000,
             'count' : 1
         }
         wrong_count = {
             'username': 'Alice',
             'goodid': test_good.id,
-            'count' : 100
+            'count' : 100000
         }
         res = self.client.get('/order/')
         self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],HTTPStatus.METHOD_NOT_ALLOWED)
@@ -111,8 +109,8 @@ class MyTest(TestCase):
         alice = User.objects.get(name = 'Alice') 
         test_good = Good.objects.get(name= 'name')
         print(test_good.id,test_good.quantities_of_inventory)
-        self.assertEqual(test_good.quantities_of_inventory,1)
-        self.assertEqual(test_good.quantities_sold,6)
+        self.assertEqual(test_good.quantities_of_inventory,2)
+        self.assertEqual(test_good.quantities_sold,5)
         
     def place_order(self):
         order = {
