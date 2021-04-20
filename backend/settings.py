@@ -117,19 +117,19 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    },
     # 'default': {
-    #     'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
-    #     'NAME': 'octsdata',  # 数据库名
-    #     'USER': 'octs',  # 账号
-    #     'PASSWORD': 'Ruangong1.',  # 密码
-    #     'HOST': 'OCTS-database.JustDebugIt.secoder.local',  # HOST
-    #     'POST': 3306,  # 端口
-    #     # uthee7xohr6nah6Requ9shaep8Wuk2bu
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
     # },
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
+        'NAME': 'octsdata',  # 数据库名
+        'USER': 'octs',  # 账号
+        'PASSWORD': 'Ruangong1.',  # 密码
+        'HOST': 'OCTS-database.JustDebugIt.secoder.local',  # HOST
+        'POST': 3306,  # 端口
+        # uthee7xohr6nah6Requ9shaep8Wuk2bu
+    },
     # 'default': {
     #     'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
     #     'NAME': 'octs',  # 数据库名
