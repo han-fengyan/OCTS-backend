@@ -11,4 +11,6 @@ urlpatterns = [
     path('details/<int:id>', views.detail),
     path('modify/', csrf_exempt(views.modify)),
     path('status/', csrf_exempt(views.on_off_shelf)),
+    path('search/', views.search),
+    path('searchcanary/', views.advanced_search),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
