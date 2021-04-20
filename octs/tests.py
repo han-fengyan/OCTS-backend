@@ -76,7 +76,6 @@ class MyTest(TestCase):
         self.assertTrue(s['exp']<s['iat']+86401)
 
     def test_place_order(self):
-        # alice = User.objects.get(name = 'Alice')
         test_good = Good.objects.get(name= 'name')
         order = {
             'username': 'Alice',
