@@ -67,7 +67,9 @@ class GoodTest(TestCase):  # pragma: no cover
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
         response = self.client.post('/list/')
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
-        response = self.client.get('/products/')
+        response = self.client.get('/products/', data={
+            'username': '1'
+        })
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
         response = self.client.post('/products/')
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
