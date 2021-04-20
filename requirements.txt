@@ -4,4 +4,5 @@ Django == 3.1.7
 PyMySQL~=1.0.2
 Pillow~=8.1.2
 django-cors-headers == 3.7.0
-pyjwt == 2.0.1 
+pyjwt == 2.0.1
+jieba
