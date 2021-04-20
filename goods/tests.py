@@ -1,7 +1,8 @@
 import json
 from http import HTTPStatus
 from django.test import TestCase, Client
-from .models import Good
+from .models import Good, Favourite
+from octs.models import User
 
 
 # Create your tests here.
@@ -67,9 +68,18 @@ class GoodTest(TestCase):  # pragma: no cover
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
         response = self.client.post('/list/')
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
+        user = User(name='2', password='12345')
+        user.save()
+        response = self.client.post('/products/', data=json.dumps({
+            'username': '1'
+        }, ensure_ascii=False), content_type="application/json")
+        response = self.client.post('/products/', data=json.dumps({
+            'username': '2'
+        }, ensure_ascii=False), content_type="application/json")
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
         response = self.client.get('/products/')
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
-        response = self.client.post('/products/')
+        response = self.client.delete('/products/')
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
 
     def test_shelf(self):
@@ -177,3 +187,25 @@ class GoodTest(TestCase):  # pragma: no cover
         response = self.client.post("/searchcanary/")
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
 
+    def test_my_favourite(self):
+        user = User(name='wer', password='12345')
+        user.save()
+        product = Good(name='江山图',
+                       desc='是一幅名贵的画',
+                       quantities_of_inventory=3,
+                       quantities_sold=0,
+                       price=199.9,
+                       discount=3.5,
+                       available=False)
+        product.save()
+        fav = Favourite(user=user)
+        fav.save()
+        fav.goods.add(product)
+        response = self.client.get('/myfavourites/', data={
+            'username': 'wer'
+        })
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.get('/myfavourites/', data={
+            'username': 'wer'
+        })
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
