@@ -13,5 +13,5 @@ urlpatterns = [
     path('status/', csrf_exempt(views.on_off_shelf)),
     path('search/', views.search),
     path('searchcanary/', views.advanced_search),
-    path('favourite/', csrf_exempt()),
+    path('favourite/', csrf_exempt(views.collect_favourite)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -51,7 +51,7 @@ def add_product(request):
     return gen_response(HTTPStatus.OK, "product no%d added" % good.id)
 
 
-def collect(request):
+def collect_favourite(request):
     if request.method == 'POST':
         pass
     else:
