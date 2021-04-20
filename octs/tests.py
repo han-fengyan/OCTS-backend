@@ -76,7 +76,6 @@ class MyTest(TestCase):
 
     def test_place_order(self):
         test_good = Good.objects.get(name= 'name')
-        print(test_good.id,test_good.quantities_of_inventory)
         order = {
             'username': 'Alice',
             'goodid': test_good.id,
@@ -108,7 +107,6 @@ class MyTest(TestCase):
         self.assertEqual(json.loads(res2.content.decode('utf-8'))['code'],200)
         alice = User.objects.get(name = 'Alice') 
         test_good = Good.objects.get(name= 'name')
-        print(test_good.id,test_good.quantities_of_inventory)
         self.assertEqual(test_good.quantities_of_inventory,2)
         self.assertEqual(test_good.quantities_sold,5)
         

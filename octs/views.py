@@ -11,7 +11,7 @@ import json
 import jwt
 # Create your views here.
 
-def gen_response(code: int, data: str):
+def gen_response(code, data):
         return JsonResponse({
             'code': code,
             'data': data
@@ -187,24 +187,13 @@ def userorder(request):
 
         user = User.objects.get(name=user)
         orderlist = Order.objects.filter(user=user)
-        def my_response(code: int, data):
-            return JsonResponse({
-                'code': code,
-                'data': data
-            }, status=code)
-            
-        return my_response(200, [
-                {
-                    'name': order.name,
-                    'count': order.count,
-                    'orderid': order.orderid,
-                    'goodid': order.goodid,
-                    'cost': order.cost,
-                    'date': int(order.pub_date.timestamp()),
-                    'state': order.state,
-                }
-                for order in orderlist.order_by('-id')
-            ])
+
+        return gen_response(HTTPStatus.OK, [
+            dict(orderid= order.orderid,goodid=order.goodid,name=order.name,
+                count=order.count,cost=order.cost,date=int(order.pub_date.timestamp()),state=order.state,
+                pictures=[picture.file.url for picture in Good.objects.get(id=order.goodid).picture_set.all()])
+            for order in orderlist.order_by('-id')
+        ])
 
     return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please place your order with post")
 
@@ -213,21 +202,12 @@ def orderlist(request):
     if request.method == 'GET':
         #检验商家身份》待做
         orderlist = Order.objects.all()
-        return gen_response(200, [
-                {
-                    'user': order.user.name,
-                    'orderid': order.orderid,
-                    'goodid': order.goodid,
-                    'name': order.name,
-                    'count': order.count,
-                    'cost': order.cost,
-                    'date': int(order.pub_date.timestamp()),
-                    'state': order.state,
-                }
-
-             
-                for order in orderlist.order_by('-id')
-            ])
+        return gen_response(HTTPStatus.OK, [
+            dict(user=order.user.name,orderid= order.orderid,goodid=order.goodid,name=order.name,
+                count=order.count,cost=order.cost,date=int(order.pub_date.timestamp()),state=order.state,
+                pictures=[picture.file.url for picture in Good.objects.get(id=order.goodid).picture_set.all()])
+            for order in orderlist.order_by('-id')
+        ])
 
 @csrf_exempt
 def orderstate(request):
