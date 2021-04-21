@@ -124,30 +124,18 @@ class GoodTest(TestCase):  # pragma: no cover
         self.client.get('/details/5')
 
     def test_modify(self):
-        self.client.post('/upload/', data={
-            'title': '江山图',
-            'introduction': '是一幅名贵的画',
-            'store': 3,
-            'sell': 0,
-            'old_price': 199.9,
-            'now_price': 3.5,
-            'available': True,
-        })
+        product = Good(name='江山图',
+                       desc='是一幅名贵的画',
+                       quantities_of_inventory=3,
+                       quantities_sold=0,
+                       price=199.9,
+                       discount=3.5,
+                       available=False)
+        product.save()
         self.client.get('/modify/')
         self.client.post('/modify/', data={
-            'id': 1,
-            'title': '画卷图',
-            'introduction': '是名贵的画',
-            'store': 3,
-            'sell': 0,
-            'old_price': 203.9,
-            'now_price': 4.5,
-            'available': True,
-            'delete': '',
-        })
-        self.client.post('/modify/', data={
-            'id': 1,
-            'title': '画卷图',
+            'id': product.id,
+            'title': '画',
             'introduction': '是名贵的画',
             'store': 3,
             'sell': 0,
@@ -156,7 +144,18 @@ class GoodTest(TestCase):  # pragma: no cover
             'available': True,
         })
         self.client.post('/modify/', data={
-            'id': 1,
+            'id': product.id,
+            'title': '画',
+            'introduction': '是名贵的画',
+            'store': 3,
+            'sell': 0,
+            'old_price': 203.9,
+            'now_price': 4.5,
+            'available': True,
+            'delete': 'https://octs-backend-justdebugit.app.secoder.net/pic/pictures/1.jpg',
+        })
+        self.client.post('/modify/', data={
+            'id': product.id,
             'introduction': '是名贵的画',
             'store': 3,
             'sell': 0,
@@ -165,6 +164,7 @@ class GoodTest(TestCase):  # pragma: no cover
             'available': True,
         })
         self.client.post('/modify/', data={
+            'id': product.id+1,
             'introduction': '是名贵的画',
             'store': 3,
             'sell': 0,
@@ -190,6 +190,8 @@ class GoodTest(TestCase):  # pragma: no cover
     def test_my_favourite(self):
         user = User(name='wer', password='12345')
         user.save()
+        user2 = User(name='wer2', password='12345')
+        user2.save()
         product = Good(name='江山图',
                        desc='是一幅名贵的画',
                        quantities_of_inventory=3,
@@ -206,6 +208,31 @@ class GoodTest(TestCase):  # pragma: no cover
         })
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
         response = self.client.get('/myfavourites/', data={
-            'username': 'wer'
+            'username': 'wer2'
         })
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.post('/favourite/', data=json.dumps({
+            'username': 'wer',
+            'id': product.id,
+        }, ensure_ascii=False), content_type='application/json')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.post('/favourite/', data=json.dumps({
+            'username': 'wer2',
+            'id': product.id,
+        }, ensure_ascii=False), content_type='application/json')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.post('/favourite/', data=json.dumps({
+            'username': 'wer3',
+            'id': product.id,
+        }, ensure_ascii=False), content_type='application/json')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.BAD_REQUEST
+        response = self.client.post('/favourite/', data=json.dumps({
+            'username': 'wer',
+            'id': product.id+1,
+        }, ensure_ascii=False), content_type='application/json')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE
+        response = self.client.get('/favourite/', data={
+            'username': 'wer',
+            'id': product.id+1,
+        })
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
