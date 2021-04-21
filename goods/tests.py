@@ -175,11 +175,11 @@ class GoodTest(TestCase):  # pragma: no cover
 
     def test_search(self):
         response = self.client.get("/search/", data={
-            'key': '江山'
+            'keyword': '江山'
         })
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
         response = self.client.get("/searchcanary/", data={
-            'key': '江山'
+            'keyword': '江山'
         })
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
         response = self.client.post("/search/")
