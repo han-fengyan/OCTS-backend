@@ -15,15 +15,25 @@ def gen_response(code, mes):
     }, status=code, content_type='application/json')
 
 
-def products_lists_response(products):
+def products_lists_response(products, favourites=False):
     if products is not None:
-        return gen_response(HTTPStatus.OK, [
-            dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
-                 now_price=product.discount, sell=product.quantities_sold,
-                 store=product.quantities_of_inventory, available=product.available,
-                 pictures=[picture.file.url for picture in product.picture_set.all()])
-            for product in products
-        ])
+        if favourites:
+            return gen_response(HTTPStatus.OK, [
+                dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
+                     now_price=product.discount, sell=product.quantities_sold,
+                     store=product.quantities_of_inventory, available=product.available,
+                     pictures=[picture.file.url for picture in product.picture_set.all()],
+                     liked=True)
+                for product in products
+            ])
+        else:
+            return gen_response(HTTPStatus.OK, [
+                dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
+                     now_price=product.discount, sell=product.quantities_sold,
+                     store=product.quantities_of_inventory, available=product.available,
+                     pictures=[picture.file.url for picture in product.picture_set.all()],)
+                for product in products
+            ])
     else:
         return gen_response(HTTPStatus.OK, [])
 
@@ -66,7 +76,23 @@ def add_product(request):
 
 def collect_favourite(request):
     if request.method == 'POST':
-        pass
+        json_data = json.loads(request.body.decode('utf-8'))
+        try:
+            user = User.objects.get(name=json_data['username'])
+        except:
+            return gen_response(HTTPStatus.BAD_REQUEST, "")
+        try:
+            favourites = user.favourite
+        except:
+            favourites = Favourite(user=user)
+            favourites.save()
+        try:
+            product_id = json_data['id']
+            product = Good.objects.get(id=product_id)
+        except:
+            return gen_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE, "")
+        favourites.goods.add(product)
+        return gen_response(HTTPStatus.OK, "successfully liked product")
     else:
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "please post your favourites")
 
@@ -78,7 +104,7 @@ def my_favourites(request):
     user = User.objects.get(name=username)
     try:
         product_list = user.favourite.goods.all()
-        return products_lists_response(product_list)
+        return products_lists_response(product_list, True)
     except Exception:
         return products_lists_response(None)
 
