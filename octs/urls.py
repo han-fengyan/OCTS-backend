@@ -9,4 +9,5 @@ urlpatterns = [
     path('orderlist/',views.orderlist,name='orderlist'),
     path('pay/', views.pay,name='pay'),
     path('orderstate/',views.orderstate),
+    path('merchantlogin/',views.merchantlogin),
 ]
