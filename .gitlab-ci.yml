@@ -21,7 +21,7 @@ unit-test:
   before_script:
     - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
   script:
-    - python manage.py makemigrations
+    - python manage.py makemigrations octs
     - python manage.py makemigrations goods
     - python manage.py migrate
     - coverage run manage.py test
