@@ -6,7 +6,7 @@ from octs.models import User
 
 
 # Create your tests here.
-
+#NOSONAR
 
 class GoodTest(TestCase):  # pragma: no cover
     def setUp(self) -> None:

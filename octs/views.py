@@ -2,7 +2,7 @@ from django.http import JsonResponse, HttpResponse
 from http import HTTPStatus
 from django.core.exceptions import ValidationError
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Coupon ,Order
+from .models import User, Coupon ,Order,Merchant
 from goods.models import Good, Picture
 
 from django.conf import settings
@@ -237,3 +237,29 @@ def orderstate(request):
         return gen_response(200,"you have modify the order successfully")
 
     return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please modify an order with post")
+
+@csrf_exempt
+def merchantlogin(request):
+    if request.method == 'POST':
+        json_str = request.body.decode()
+        json_data = json.loads(json_str)
+
+        try:
+            user = Merchant.objects.get(name = json_data['name']) 
+        except Exception :
+            return gen_response(400, "merchant doesn't exist")
+
+        if user.password == json_data['password']:
+            #创建token
+            dic = {
+                'exp': datetime.datetime.now() + datetime.timedelta(days=1), #过期时间
+                'iat': datetime.datetime.now(),#开始时间
+                'username': user.name
+            }
+            s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256')
+            user.token = s
+            user.save()
+            return JsonResponse({'code':201, 'data':"login successfully",'token': s , 'income': user.income, 'name':user.name})
+                    
+        else:
+            return gen_response(401, "password is wrong!")
