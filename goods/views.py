@@ -15,17 +15,30 @@ def gen_response(code, mes):
     }, status=code, content_type='application/json')
 
 
-def products_lists_response(products, favourites=False):
+def products_lists_response(products, favourites=False, user=None):
     if products is not None:
         if favourites:
-            return gen_response(HTTPStatus.OK, [
-                dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
-                     now_price=product.discount, sell=product.quantities_sold,
-                     store=product.quantities_of_inventory, available=product.available,
-                     pictures=[picture.file.url for picture in product.picture_set.all()],
-                     liked=True)
-                for product in products
-            ])
+            if user is not None:
+                favourite = user.favourite.goods.all()
+                return gen_response(HTTPStatus.OK, [
+                    dict(id=product.id, title=product.name, introduction=product.desc,
+                         old_price=product.price,
+                         now_price=product.discount, sell=product.quantities_sold,
+                         store=product.quantities_of_inventory, available=product.available,
+                         pictures=[picture.file.url for picture in product.picture_set.all()],
+                         liked=favourite is not None and product in favourite)
+                    for product in products
+                ])
+            else:
+                return gen_response(HTTPStatus.OK, [
+                    dict(id=product.id, title=product.name, introduction=product.desc,
+                         old_price=product.price,
+                         now_price=product.discount, sell=product.quantities_sold,
+                         store=product.quantities_of_inventory, available=product.available,
+                         pictures=[picture.file.url for picture in product.picture_set.all()],
+                         liked=True)
+                    for product in products
+                ])
         else:
             return gen_response(HTTPStatus.OK, [
                 dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
@@ -60,9 +73,6 @@ def add_product(request):
     good = Good(name=name, desc=description, quantities_of_inventory=quantities_of_inventory,
                 quantities_sold=quantities_sold, price=ori_price, discount=cur_price,
                 available=available)
-    # good = Good(name="name", desc="description", quantities_of_inventory=3,
-    #             quantities_sold=4, price=17.99, discount=15.99,
-    #             available=True)
     good.save()
     try:
         pictures = request.FILES.getlist('pictures')
@@ -260,7 +270,11 @@ def search(request):
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "")
     keyword = request.GET['keyword']
     products = Good.objects.filter(name__contains=keyword)
-    return products_lists_response(products)
+    try:
+        user = User.objects.get(name=request.GET['username'])
+        return products_lists_response(products=products, favourites=True, user=user)
+    except:
+        return products_lists_response(products)
 
 
 def advanced_search(request):
