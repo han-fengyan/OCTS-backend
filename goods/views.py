@@ -293,6 +293,7 @@ def add_draft(request):
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,
                             "please save your draft with post")
     draft = Draft()
+    print(request.POST)
     try:  # 从表单中拿出数据
         name = request.POST["title"]
         draft.name = name
@@ -305,22 +306,26 @@ def add_draft(request):
         pass
     try:
         quantities_of_inventory = request.POST["store"]
-        draft.quantities_of_inventory = quantities_of_inventory
+        if quantities_of_inventory != '':
+            draft.quantities_of_inventory = quantities_of_inventory
     except KeyError:
         pass
     try:
         quantities_sold = request.POST['sell']
-        draft.quantities_sold = quantities_sold
+        if quantities_sold != '':
+            draft.quantities_sold = quantities_sold
     except KeyError:
         pass
     try:
         ori_price = request.POST['old_price']
-        draft.price = ori_price
+        if ori_price != '':
+            draft.price = ori_price
     except KeyError:
         pass
     try:
         cur_price = request.POST['now_price']
-        draft.discount = cur_price
+        if cur_price != '':
+            draft.discount = cur_price
     except KeyError:
         pass
     draft.save()
