@@ -1,12 +1,12 @@
 import json
 from http import HTTPStatus
 from django.test import TestCase, Client
-from .models import Good, Favourite
+from .models import Good, Favourite, Draft
 from octs.models import User
 
 
 # Create your tests here.
-#NOSONAR
+# NOSONAR
 
 class GoodTest(TestCase):  # pragma: no cover
     def setUp(self) -> None:
@@ -151,7 +151,7 @@ class GoodTest(TestCase):  # pragma: no cover
             'available': True,
         })
         self.client.post('/modify/', data={
-            'id': product.id+1,
+            'id': product.id + 1,
             'introduction': '是名贵的画',
             'store': 3,
             'sell': 0,
@@ -215,12 +215,12 @@ class GoodTest(TestCase):  # pragma: no cover
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.BAD_REQUEST
         response = self.client.post('/favourite/', data=json.dumps({
             'username': 'wer',
-            'id': product.id+1,
+            'id': product.id + 1,
         }, ensure_ascii=False), content_type='application/json')
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE
         response = self.client.get('/favourite/', data={
             'username': 'wer',
-            'id': product.id+1,
+            'id': product.id + 1,
         })
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
 
@@ -283,3 +283,48 @@ class GoodTest(TestCase):  # pragma: no cover
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
         response = self.client.get('/drafts/')
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+
+    def test_commit(self):
+        draft = Draft(name='江山图',
+                      desc='是一幅名贵的画',
+                      quantities_of_inventory=3,
+                      quantities_sold=0,
+                      price=199.9,
+                      discount=3.5,
+                      available=False)
+        draft.save()
+        response = self.client.get('/commit/')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
+        self.client.post('/commit/', data={
+            'id': draft.id,
+            'title': '画',
+            'introduction': '是名贵的画',
+            'store': 3,
+            'sell': 0,
+            'old_price': 203.9,
+            'now_price': 4.5,
+            'available': True,
+            'delete': 'https://octs-backend-justdebugit.app.secoder.net/pic/pictures/1.jpg\nhttps://octs-backend'
+                      '-justdebugit.app.secoder.net/pic/pictures/1.jpg',
+        })
+        draft = Draft(name='江山图',
+                      desc='是一幅名贵的画',
+                      quantities_of_inventory=3,
+                      quantities_sold=0,
+                      price=199.9,
+                      discount=3.5,
+                      available=False)
+        draft.save()
+        response = self.client.post('/commit/', data={
+            'id': draft.id,
+            'introduction': '是名贵的画',
+            'store': 3,
+            'sell': 0,
+            'old_price': 203.9,
+            'now_price': 4.5,
+            'available': True,
+        })
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.BAD_REQUEST
+        response = self.client.post('/commit/', data={
+            'id': draft.id+1,
+        })

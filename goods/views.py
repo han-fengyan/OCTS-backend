@@ -44,7 +44,7 @@ def products_lists_response(products, favourites=False, user=None):
                 dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
                      now_price=product.discount, sell=product.quantities_sold,
                      store=product.quantities_of_inventory, available=product.available,
-                     pictures=[picture.file.url for picture in product.picture_set.all()],)
+                     pictures=[picture.file.url for picture in product.picture_set.all()], )
                 for product in products
             ])
     else:
@@ -350,4 +350,55 @@ def all_drafts(request):
 
 
 def commit_draft(request):
-    pass
+    if request.method != 'POST':
+        return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "")
+    try:
+        draft_id = request.POST['id']
+        draft = Draft.objects.get(id=draft_id)
+        # product.delete()
+    except Exception:
+        return gen_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE, '')
+
+    try:  # 从表单中拿出数据
+        name = request.POST["title"]
+        description = request.POST["introduction"]
+        quantities_of_inventory = request.POST["store"]
+        quantities_sold = request.POST['sell']
+        ori_price = request.POST['old_price']
+        cur_price = request.POST['now_price']
+    except KeyError:
+        return gen_response(HTTPStatus.BAD_REQUEST, "miss key message")
+
+    available = True
+
+    good = Good(name=name, desc=description, quantities_of_inventory=quantities_of_inventory,
+                quantities_sold=quantities_sold, price=ori_price, discount=cur_price,
+                available=available)
+    good.save()
+
+    try:
+        deleted_pictures = request.POST['delete']
+        pictures = deleted_pictures.split('\n')[:-1]
+        for picture in pictures:
+            url = picture[53:]
+            try:
+                picture = Picture.objects.get(file=url)
+                picture.delete()
+            except Exception:
+                pass
+    except KeyError:
+        pass
+    for picture in draft.picture_set.all():
+        picture.draft = None
+        picture.good = good
+
+    try:
+        pictures = request.FILES.getlist('pictures')
+        for picture in pictures:
+            pic = Picture(file=picture, good=good)
+            pic.save()
+    except KeyError:
+        pass
+
+    draft.delete()
+    return HttpResponse(HTTPStatus.OK, "")
