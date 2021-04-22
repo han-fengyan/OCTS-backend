@@ -15,6 +15,7 @@ class MyTest(TestCase):
         User.objects.create(name="Bob", password="123456")
         Good.objects.create(name="name", desc="description", quantities_of_inventory=3,
                 quantities_sold=4, price=17, discount=15, available=True)
+        Merchant.objects.create(name="merchant",password="merchant123")
 
     def test_add_new_user(self):
         user = {
@@ -174,3 +175,27 @@ class MyTest(TestCase):
         }        
         res = self.client.post('/orderstate/', data=json.dumps(data),content_type = jsontype)
         self.assertEqual(json.loads(res.content.decode())['code'],200)
+
+    def test_merchant_login(self):
+        a = {
+            'name': "merchant",
+            'password': "merchant123",
+        }
+        #用户存在，密码错误
+        b = {
+            'name': 'merchant',
+            'password': "456789"
+        }
+        #用户不存在
+        c = {
+            'username':'charls',
+            'password': 'asdasd'
+        }
+        res1 = self.client.post('/merchantlogin/', data = json.dumps(a) , content_type = jsontype)
+        res2 = self.client.post('/merchantlogin/', data = json.dumps(b) , content_type = jsontype)
+        res3 = self.client.post('/merchantlogin/', data = json.dumps(c) , content_type = jsontype)
+
+        res1 = json.loads(res1.content.decode())
+        self.assertEqual(res1['code'],201)
+        self.assertJSONEqual(res2.content,{'code':401 ,'data': "password is wrong!"})
+        self.assertJSONEqual(res3.content,{'code':400 ,'data': "merchant doesn't exist"})
