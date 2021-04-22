@@ -1,6 +1,6 @@
 from django.http import JsonResponse, HttpResponse
 from http import HTTPStatus
-from .models import Good, Picture, Category, Keyword, Favourite
+from .models import Good, Picture, Category, Keyword, Favourite, Draft
 from octs.models import User
 import json
 import jieba
@@ -91,7 +91,10 @@ def collect_favourite(request):
             product = Good.objects.get(id=product_id)
         except:
             return gen_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE, "")
-        favourites.goods.add(product)
+        if product in favourites.goods.all():
+            favourites.goods.remove(product)
+        else:
+            favourites.goods.add(product)
         return gen_response(HTTPStatus.OK, "successfully liked product")
     else:
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "please post your favourites")
@@ -269,3 +272,63 @@ def advanced_search(request):
         pass
     products = Good.objects.filter(name__contains=keyword)
     return products_lists_response(products)
+
+
+def add_draft(request):
+    if request.method != 'POST':
+        return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,
+                            "please save your draft with post")
+    draft = Draft()
+    try:  # 从表单中拿出数据
+        name = request.POST["title"]
+        draft.name = name
+    except KeyError:
+        pass
+    try:
+        description = request.POST["introduction"]
+        draft.desc = description
+    except KeyError:
+        pass
+    try:
+        quantities_of_inventory = request.POST["store"]
+        draft.quantities_of_inventory = quantities_of_inventory
+    except KeyError:
+        pass
+    try:
+        quantities_sold = request.POST['sell']
+        draft.quantities_sold = quantities_sold
+    except KeyError:
+        pass
+    try:
+        ori_price = request.POST['old_price']
+        draft.price = ori_price
+    except KeyError:
+        pass
+    try:
+        cur_price = request.POST['now_price']
+        draft.discount = cur_price
+    except KeyError:
+        pass
+    draft.save()
+    try:
+        pictures = request.FILES.getlist('pictures')
+        for picture in pictures:
+            pic = Picture(file=picture, draft=draft)
+            pic.save()
+    except KeyError:
+        pass
+    return gen_response(HTTPStatus.OK, "draft successfully saved")
+
+
+def all_drafts(request):
+    json_list = [
+        dict(id=draft.id, title=draft.name, introduction=draft.desc, old_price=draft.price,
+             now_price=draft.discount, store=draft.quantities_of_inventory,
+             pictures=[picture.file.url for picture in draft.picture_set.all()])
+        for draft in Draft.objects.all()
+    ]
+    return gen_response(HTTPStatus.OK, json_list)
+
+
+def commit_draft(request):
+    pass

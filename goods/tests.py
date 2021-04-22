@@ -24,19 +24,6 @@ class GoodTest(TestCase):  # pragma: no cover
             'available': False,
         })
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
-        # f = open("../pictures/1.png", 'rb')
-        # response = self.client.post('/upload/', data={
-        #     'title': '江山图',
-        #     'introduction': '是一幅名贵的画',
-        #     'store': 3,
-        #     'sell': 0,
-        #     'old_price': 199.9,
-        #     'now_price': 3.5,
-        #     'available': False,
-        #     'pictures': f,
-        # })
-        # assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
-        # f.close()
 
     def test_default_available_upload(self):
         response = self.client.post('/upload/', data={
@@ -236,3 +223,63 @@ class GoodTest(TestCase):  # pragma: no cover
             'id': product.id+1,
         })
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
+
+    def test_draft(self):
+        response = self.client.post('/save/', data={
+            'introduction': '是一幅名贵的画',
+            'store': 3,
+            'sell': 0,
+            'old_price': 199.9,
+            'now_price': 3.5,
+            'available': False,
+        })
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.post('/save/', data={
+            'title': '江山图',
+            'store': 3,
+            'sell': 0,
+            'old_price': 199.9,
+            'now_price': 3.5,
+            'available': False,
+        })
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.post('/save/', data={
+            'title': '江山图',
+            'introduction': '是一幅名贵的画',
+            'sell': 0,
+            'old_price': 199.9,
+            'now_price': 3.5,
+            'available': False,
+        })
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.post('/save/', data={
+            'title': '江山图',
+            'introduction': '是一幅名贵的画',
+            'store': 3,
+            'old_price': 199.9,
+            'now_price': 3.5,
+            'available': False,
+        })
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.post('/save/', data={
+            'title': '江山图',
+            'introduction': '是一幅名贵的画',
+            'store': 3,
+            'sell': 0,
+            'now_price': 3.5,
+            'available': False,
+        })
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.post('/save/', data={
+            'title': '江山图',
+            'introduction': '是一幅名贵的画',
+            'store': 3,
+            'sell': 0,
+            'old_price': 199.9,
+            'available': False,
+        })
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.get('/save/')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
+        response = self.client.get('/drafts/')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
