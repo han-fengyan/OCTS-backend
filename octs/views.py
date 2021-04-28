@@ -295,6 +295,7 @@ def merchantlogin(request):
         else:
             return gen_response(401, "password is wrong!")
 
+@csrf_exempt
 def identify(token):
     try:
         payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
@@ -307,7 +308,7 @@ def identify(token):
     else:
         return False
 
-
+@csrf_exempt
 def display_money(request):
     if request.method == 'POST':
         try:
