@@ -18,4 +18,5 @@ urlpatterns = [
     path('save/', csrf_exempt(views.add_draft)),
     path('drafts/', views.all_drafts),
     path('commit/', csrf_exempt(views.commit_draft)),
+    path('draftedit/', csrf_exempt(views.edit_draft)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
