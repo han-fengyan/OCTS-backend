@@ -58,8 +58,8 @@ def login(request):
         if user.password == json_data['password']:
             #创建token
             dic = {
-                'exp': datetime.datetime.now() + datetime.timedelta(days=1), #过期时间
-                'iat': datetime.datetime.now(),#开始时间
+                'exp': time.time() + 23200, #过期时间
+                'iat': time.time(),#开始时间
                 'username': user.name
             }
             s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256')
@@ -89,6 +89,7 @@ def order(request):
             username = json_data['username']
             goodid = json_data['goodid']
             count = json_data['count']
+            token = json_data['token']
 
         except KeyError:
             return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
@@ -101,6 +102,9 @@ def order(request):
         except Exception:
             return gen_response(HTTPStatus.BAD_REQUEST, "user or good doesn't exist") 
         
+        #判断用户是否处于登录状态
+        if identify(token) is False:
+            return gen_response(HTTPStatus.BAD_REQUEST, "user doesn't login")
         #判断商品是否上架
         if good.available is False:
             return gen_response(406, "the good is off shelf") 
@@ -140,12 +144,17 @@ def pay(request):
             username = json_data['username']
             orderid = json_data['orderid']
             cost = json_data['cost']
+            token = json_data['token']
 
         except KeyError :
             return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid")  
         
+        #判断用户是否处于登录状态
+        if identify(token) is False:
+            return gen_response(HTTPStatus.BAD_REQUEST, "user doesn't login")
+
         #判断数据库是否有该用户或者商品
         try:
             user = User.objects.get(name = username)    
@@ -179,12 +188,17 @@ def userorder(request):
         
         try:
             user = json_data['username']
+            token = json_data['token']
             
         except KeyError :
             return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
 
+        #判断用户是否处于登录状态
+        if identify(token) is False:
+            return gen_response(HTTPStatus.BAD_REQUEST, "user doesn't login")
+            
         user = User.objects.get(name=user)
         orderlist = Order.objects.filter(user=user)
 
@@ -252,8 +266,8 @@ def merchantlogin(request):
         if user.password == json_data['password']:
             #创建token
             dic = {
-                'exp': datetime.datetime.now() + datetime.timedelta(days=1), #过期时间
-                'iat': datetime.datetime.now(),#开始时间
+                'exp': time.time() + 23200, #过期时间
+                'iat': time.time(),#开始时间
                 'username': user.name
             }
             s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256')
@@ -263,3 +277,16 @@ def merchantlogin(request):
                     
         else:
             return gen_response(401, "password is wrong!")
+
+def identify(token):
+    try:
+        payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
+        exp = payload['exp']
+    except Exception :
+        return False
+
+    if (exp - time.time() > 0) and User.objects.filter(name = payload['username']):
+        return True
+
+    else:
+        return False
