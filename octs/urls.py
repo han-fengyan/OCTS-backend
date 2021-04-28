@@ -11,4 +11,5 @@ urlpatterns = [
     path('orderstate/',views.orderstate),
     path('merchantlogin/',views.merchantlogin),
     path('display_money',views.display_money),
+    path('cancel_order',views.cancel_order),
 ]
