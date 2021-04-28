@@ -293,7 +293,7 @@ def add_draft(request):
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,
                             "please save your draft with post")
     draft = Draft()
-    print(request.POST)
+    print(request.POST, )
     try:  # 从表单中拿出数据
         name = request.POST["title"]
         draft.name = name
@@ -391,6 +391,7 @@ def commit_draft(request):
     for picture in draft.picture_set.all():
         picture.draft = None
         picture.good = good
+        picture.save()
 
     try:
         pictures = request.FILES.getlist('pictures')
@@ -402,3 +403,7 @@ def commit_draft(request):
 
     draft.delete()
     return HttpResponse(HTTPStatus.OK, "")
+
+
+def edit_draft(request):
+    pass

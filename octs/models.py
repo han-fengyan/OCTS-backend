@@ -31,7 +31,7 @@ class Order(models.Model):
     count = models.IntegerField(default = 0)
     cost = models.FloatField(default=10)
     pub_date = models.DateTimeField(auto_now_add = True)
-    state = models.IntegerField(default = 0) #状态码： 0：未支付；1：已支付；2:已发货; 3：已收货
+    state = models.IntegerField(default = 0) #状态码： 0：未支付；1：已支付；2:已发货; 3：已收货 4:取消订单
 
 #商家
 class Merchant(models.Model):

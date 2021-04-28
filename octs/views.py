@@ -94,7 +94,12 @@ def order(request):
         except KeyError:
             return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
         except Exception:
-            return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid")    
+            return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
+        
+        if count <= 0 :
+            return gen_response(500, "message is invalid") 
+
+
         #判断数据库是否有该用户或者商品
         try:
             user = User.objects.get(name = username)    
@@ -161,7 +166,10 @@ def pay(request):
             order = Order.objects.get(orderid = orderid)
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "user or order doesn't exist") 
-        
+
+        if cost < 0:
+            return gen_response(500,"cost is wronng")        
+
         if user.money < cost :
             return gen_response(HTTPStatus.BAD_REQUEST, "money is not enough")
         
@@ -198,7 +206,7 @@ def userorder(request):
         #判断用户是否处于登录状态
         if identify(token) is False:
             return gen_response(HTTPStatus.BAD_REQUEST, "user doesn't login")
-            
+
         user = User.objects.get(name=user)
         orderlist = Order.objects.filter(user=user)
 
@@ -243,11 +251,17 @@ def orderstate(request):
 
         try:
             order = Order.objects.get(orderid = orderid)
+            merchant = Merchant.objects.get(name = 'merchant')
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "order doesn't exist")   
 
         order.state = change
         order.save()
+
+        if change == 3 :
+            merchant.income += order.cost
+            merchant.save()
+        
         return gen_response(200,"you have modify the order successfully")
 
     return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please modify an order with post")
@@ -255,8 +269,11 @@ def orderstate(request):
 @csrf_exempt
 def merchantlogin(request):
     if request.method == 'POST':
-        json_str = request.body.decode()
-        json_data = json.loads(json_str)
+        try:
+            json_data = json.loads(request.body.decode('utf-8'))
+
+        except ValueError :
+            return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype") 
 
         try:
             user = Merchant.objects.get(name = json_data['name']) 
@@ -287,6 +304,26 @@ def identify(token):
 
     if (exp - time.time() > 0) and User.objects.filter(name = payload['username']):
         return True
-
     else:
         return False
+
+
+def display_income(request):
+    if request.method == 'POST':
+        try:
+            json_data = json.loads(request.body.decode('utf-8'))
+
+        except ValueError :
+            return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype") 
+        
+        try:
+            m = Merchant.objects.get(name = json_data['name']) 
+            token = json_data['token']
+        except Exception :
+            return gen_response(400, "merchant doesn't exist")
+
+        if identify(token):
+            return gen_response(200, m.income)
+
+        else :
+            return gen_response(HTTPStatus.BAD_REQUEST,"please log in")
