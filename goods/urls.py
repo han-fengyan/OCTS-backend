@@ -15,4 +15,7 @@ urlpatterns = [
     path('searchcanary/', views.advanced_search),
     path('favourite/', csrf_exempt(views.collect_favourite)),
     path('myfavourites/', views.my_favourites),
+    path('save/', csrf_exempt(views.add_draft)),
+    path('drafts/', views.all_drafts),
+    path('commit/', csrf_exempt(views.commit_draft)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

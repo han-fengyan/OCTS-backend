@@ -16,9 +16,20 @@ class Good(models.Model):
         return self.name
 
 
+class Draft(models.Model):
+    name = models.CharField(max_length=100, null=True, blank=True)
+    desc = models.CharField(max_length=1000, null=True, blank=True)
+    available = models.BooleanField(default=True, null=True, blank=True)
+    quantities_of_inventory = models.IntegerField(null=True, blank=True)
+    quantities_sold = models.IntegerField(default=0, null=True, blank=True)
+    price = models.FloatField(null=True, blank=True)
+    discount = models.FloatField(default=0, null=True, blank=True)
+
+
 class Picture(models.Model):
     file = models.ImageField(upload_to='pictures/', blank=True, null=True)
-    good = models.ForeignKey(Good, on_delete=models.CASCADE)
+    good = models.ForeignKey(Good, on_delete=models.CASCADE, null=True, blank=True)
+    draft = models.ForeignKey(Draft, on_delete=models.CASCADE, null=True, blank=True)
 
 
 class Category(models.Model):
