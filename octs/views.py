@@ -308,7 +308,7 @@ def identify(token):
         return False
 
 
-def display_income(request):
+def display_money(request):
     if request.method == 'POST':
         try:
             json_data = json.loads(request.body.decode('utf-8'))
@@ -317,13 +317,18 @@ def display_income(request):
             return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype") 
         
         try:
-            m = Merchant.objects.get(name = json_data['name']) 
+            r = json_data['role'] 
+            n = json_data['name']
             token = json_data['token']
         except Exception :
-            return gen_response(400, "merchant doesn't exist")
+            return gen_response(500, "unexpected error")
 
         if identify(token):
-            return gen_response(200, m.income)
-
+            if r == 'user':
+                m = User.objects.get(name = n)
+                return gen_response(200,m.money)
+            elif r == 'merchant' :
+                m = Merchant.objects.get(name = n) 
+                return gen_response(200, m.income)
         else :
-            return gen_response(HTTPStatus.BAD_REQUEST,"please log in")
+            return gen_response(HTTPStatus.BAD_REQUEST,"please login")

@@ -10,5 +10,5 @@ urlpatterns = [
     path('pay/', views.pay,name='pay'),
     path('orderstate/',views.orderstate),
     path('merchantlogin/',views.merchantlogin),
-    path('display_income',views.display_income),
+    path('display_money',views.display_money),
 ]
