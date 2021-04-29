@@ -247,3 +247,14 @@ class MyTest(TestCase):
         self.assertEqual(res1['code'],201)
         self.assertJSONEqual(res2.content,{'code':401 ,'data': "password is wrong!"})
         self.assertJSONEqual(res3.content,{'code':400 ,'data': "merchant doesn't exist"})
+
+
+    def test_display_money(self):
+        data ={
+            'role':'merchant',
+            'name': 'merchant',
+            'token': 'asdh',
+        } 
+        res = self.client.post('/display_money/',data=json.dumps(data),content_type=jsontype)
+        self.assertEqual(json.loads(res.content.decode())['code'],200)
+        

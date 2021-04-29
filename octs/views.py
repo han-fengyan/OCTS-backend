@@ -351,6 +351,7 @@ def display_money(request):
         #         return gen_response(200,merchant.income)
         # else :
         #     return gen_response(444,'not login')
+        
         if r == 'user' and User.objects.filter(name = name):
             user = User.objects.get(name = name)
             return gen_response(200,user.money)
