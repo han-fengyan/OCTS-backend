@@ -96,7 +96,7 @@ def order(request):
         except Exception:
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
         
-        if count <= 0 :
+        if count <= 0 or type(count) != int:
             return gen_response(500, "message is invalid") 
 
 
@@ -123,7 +123,7 @@ def order(request):
             return gen_response(406, "quantity of goods is not enough")
         #更新商品与用户信息
         good.quantities_of_inventory -= count
-        good.quantities_sold += count
+        # good.quantities_sold += count
         good.save()
 
         number = str(time.time())[0:10]+str(time.time())[11:18] + str(random.randint(10000,99999)) + str(goodid) + str(random.randint(10000,99999)) 
@@ -167,6 +167,11 @@ def pay(request):
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "user or order doesn't exist") 
 
+        try:
+            good = Good.objects.get(id = order.goodid)
+        except Exception :
+            return gen_response(HTTPStatus.BAD_REQUEST, "good doesn't exist") 
+
         if cost < 0:
             return gen_response(500,"cost is wronng")        
 
@@ -181,6 +186,8 @@ def pay(request):
 
         user.money -= cost
         user.save()
+        good.quantities_sold += order.count
+        good.save()
 
         return gen_response(200,"you have paid successfully")
 
@@ -333,3 +340,71 @@ def display_money(request):
                 return gen_response(200, m.income)
         else :
             return gen_response(HTTPStatus.BAD_REQUEST,"please login")
+
+    return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please request with post")
+
+def cancel_order(request):
+    if request.method == 'POST':
+        try:
+            json_data = json.loads(request.body.decode('utf-8'))
+
+        except ValueError :
+            return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype") 
+        
+        try:
+            orderid = json_data['orderid']
+            change = json_data['change']
+            token = json_data['token']
+
+        except KeyError :
+            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
+        except Exception :
+            return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
+
+        try:
+            order = Order.objects.get(orderid = orderid)
+            merchant = Merchant.objects.get(name = 'merchant')
+        except Exception :
+            return gen_response(HTTPStatus.BAD_REQUEST, "order doesn't exist")   
+        
+        user = order.user
+        cost = order.cost 
+        nowstate = order.state
+        count = order.count
+        try:
+            good = Good.objects.get(id = order.goodid)
+        except Exception :
+            return gen_response(HTTPStatus.BAD_REQUEST, "good doesn't exist")  
+
+        #刚下单
+        if nowstate == 0:
+            good.quantities_of_inventory += count
+            good.save()
+            # good.quantities_sold += count
+
+        #支付未发货，返库存，返用户钱
+        if nowstate == 1:
+            user.money += cost 
+            user.save()
+            good.quantities_of_inventory += count
+            good.quantities_sold -= count
+            good.save()
+
+        
+        #已发货 
+        if nowstate == 2:
+            user.money += cost 
+            user.save()
+            good.quantities_of_inventory += count
+            good.quantities_sold -= count
+            good.save()
+
+        #已收货   不允许退货
+        if nowstate == 3 :
+            return (400,"don't allow")
+        
+        order.state = change
+        order.save()
+        return gen_response(200,"you have cancel the order successfully")
+
+    return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please modify an order with post")

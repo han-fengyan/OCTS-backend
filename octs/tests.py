@@ -151,7 +151,7 @@ class MyTest(TestCase):
         alice = User.objects.get(name = 'Alice') 
         test_good = Good.objects.get(name= 'name')
         self.assertEqual(test_good.quantities_of_inventory,2)
-        self.assertEqual(test_good.quantities_sold,5)
+        self.assertEqual(test_good.quantities_sold,4)
         
     def place_order(self):
         alice = User.objects.get(name = "Alice")
