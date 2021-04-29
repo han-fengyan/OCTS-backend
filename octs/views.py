@@ -361,7 +361,6 @@ def cancel_order(request):
         
         try:
             orderid = json_data['orderid']
-            change = json_data['change']
             token = json_data['token']
 
         except KeyError :
@@ -375,46 +374,49 @@ def cancel_order(request):
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "order doesn't exist")   
         
-        user = order.user
-        cost = order.cost 
-        nowstate = order.state
-        count = order.count
-        try:
-            good = Good.objects.get(id = order.goodid)
-        except Exception :
-            return gen_response(HTTPStatus.BAD_REQUEST, "good doesn't exist")  
+        if identify(token):
+            user = order.user
+            cost = order.cost 
+            nowstate = order.state
+            count = order.count
+            try:
+                good = Good.objects.get(id = order.goodid)
+            except Exception :
+                return gen_response(HTTPStatus.BAD_REQUEST, "good doesn't exist")  
 
-        #刚下单 返库存
-        if nowstate == 0:
-            good.quantities_of_inventory += count
-            good.save()
-            # good.quantities_sold += count
+            #刚下单 返库存
+            if nowstate == 0:
+                good.quantities_of_inventory += count
+                good.save()
+                # good.quantities_sold += count
 
-        #支付未发货，返库存，返用户钱
-        if nowstate == 1:
-            user.money += cost 
-            user.save()
-            good.quantities_of_inventory += count
-            good.quantities_sold -= count
-            good.save()
+            #支付未发货，返库存，返用户钱
+            if nowstate == 1:
+                user.money += cost 
+                user.save()
+                good.quantities_of_inventory += count
+                good.quantities_sold -= count
+                good.save()
 
-        
-        #已发货 
-        if nowstate == 2:
-            user.money += cost 
-            user.save()
-            good.quantities_of_inventory += count
-            good.quantities_sold -= count
-            good.save()
+            
+            #已发货 
+            if nowstate == 2:
+                user.money += cost 
+                user.save()
+                good.quantities_of_inventory += count
+                good.quantities_sold -= count
+                good.save()
 
-        #已收货   不允许取消订单
-        if nowstate == 3 :
-            return (400,"don't allow")
-        
-        order.state = change
-        order.save()
-        return gen_response(200,"you have cancel the order successfully")
+            #已收货   不允许取消订单
+            if nowstate == 3 :
+                return (400,"don't allow")
+            
+            order.state = 4
+            order.save()
+            return gen_response(200,"you have cancel the order successfully")
 
+        else:
+            return gen_response(444,"didn't login")
     return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please modify an order with post")
 
 @csrf_exempt
