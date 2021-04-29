@@ -441,6 +441,6 @@ def is_login(request):
                 return gen_response(200,"success")
         else :
             return gen_response(444,'not login')
-            
-    return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please modify an order with post")
+
+    return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"unexpected error")
     
