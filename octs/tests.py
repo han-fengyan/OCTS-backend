@@ -91,13 +91,18 @@ class MyTest(TestCase):
     def test_no_login(self):
         bob = User.objects.get(name = "Bob")
         alice = User.objects.get(name = "Alice")
+        data ={
+            'user': 'user',
+            'token' : alice.token,
+        }
         o = {
             'user': 'user',
             'token' : bob.token,
         }
-        res = self.client.post('/is_login/',data=o,content_type = jsontype)
-        print(res.content)
-        # self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],444)
+        res = self.client.post('/is_login/',data=json.dumps(o),content_type = jsontype)
+        self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],444)
+        res = self.client.post('/is_login/',data=json.dumps(data),content_type = jsontype)
+        self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],200)
 
 
     def test_place_order(self):
