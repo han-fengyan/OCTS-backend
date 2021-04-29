@@ -17,9 +17,10 @@ class MyTest(TestCase):
         Good.objects.create(name="name", desc="description", quantities_of_inventory=3,
                 quantities_sold=4, price=17, discount=15, available=True)
         Merchant.objects.create(name="merchant",password="merchant123")
+
         self.client.post('/login/', data = json.dumps({"username":"Alice","password":"123456"}) , content_type = jsontype)
         self.client.post('/login/', data = json.dumps({"username":"Bob","password":"123456"}) , content_type = jsontype)
-
+        self.client.post('/merchantlogin/',data=json.dumps({'name':'merchant','password':'merchant123'}),content_type=jsontype )
         #过期登陆用户：
         dic = {
             'exp': time.time(), #过期时间
@@ -90,14 +91,19 @@ class MyTest(TestCase):
 
     def test_no_login(self):
         bob = User.objects.get(name = "Bob")
-        alice = User.objects.get(name = "Alice")
+        a = User.objects.get(name = "Alice")
+        data ={
+            'user': 'user',
+            'token' : a.token,
+        }
         o = {
             'user': 'user',
             'token' : bob.token,
         }
-        res = self.client.post('/is_login/',data=o,content_type = jsontype)
-        print(res.content)
-        # self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],444)
+        res = self.client.post('/is_login/',data=json.dumps(o),content_type = jsontype)
+        self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],444)
+        res = self.client.post('/is_login/',data=json.dumps(data),content_type = jsontype)
+        self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],200)
 
 
     def test_place_order(self):
@@ -140,13 +146,12 @@ class MyTest(TestCase):
         self.client.post('/order/',data=json.dumps(wrong_id),content_type = jsontype)
         self.client.post('/order/',data=json.dumps(wrong_count),content_type = jsontype)
         res = self.client.post('/order/',data=json.dumps(no_login),content_type = jsontype)
-        self.assertEqual(json.loads(res.content.decode('utf-8'))['data'],"user doesn't login")
+        self.assertEqual(json.loads(res.content.decode('utf-8'))['data'],"user doesn't login now")
 
         res1 = self.client.post('/order/',data=order,content_type = jsontype)
         self.assertEqual(json.loads(res1.content.decode('utf-8'))['code'],HTTPStatus.BAD_REQUEST)
         res2 = self.client.post('/order/',data=json.dumps(order),content_type = jsontype)
         self.assertEqual(json.loads(res2.content.decode('utf-8'))['code'],200)
-        alice = User.objects.get(name = 'Alice') 
         test_good = Good.objects.get(name= 'name')
         self.assertEqual(test_good.quantities_of_inventory,2)
         self.assertEqual(test_good.quantities_sold,4)
@@ -253,8 +258,9 @@ class MyTest(TestCase):
         data ={
             'role':'merchant',
             'name': 'merchant',
-            'token': 'asdh',
+            'token': Merchant.objects.get(name = 'merchant').token,
         } 
         res = self.client.post('/display_money/',data=json.dumps(data),content_type=jsontype)
         self.assertEqual(json.loads(res.content.decode())['code'],200)
-        
+    
+    
