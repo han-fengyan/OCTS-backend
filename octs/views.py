@@ -388,10 +388,9 @@ def cancel_order(request):
             if nowstate == 0:
                 good.quantities_of_inventory += count
                 good.save()
-                # good.quantities_sold += count
 
             #支付未发货，返库存，返用户钱
-            if nowstate == 1:
+            elif nowstate == 1:
                 user.money += cost 
                 user.save()
                 good.quantities_of_inventory += count
@@ -400,7 +399,7 @@ def cancel_order(request):
 
             
             #已发货 
-            if nowstate == 2:
+            elif nowstate == 2:
                 user.money += cost 
                 user.save()
                 good.quantities_of_inventory += count
@@ -408,8 +407,14 @@ def cancel_order(request):
                 good.save()
 
             #已收货   不允许取消订单
-            if nowstate == 3 :
-                return (400,"don't allow")
+            elif nowstate == 3 :
+                user.money += cost 
+                user.save()
+                good.quantities_of_inventory += count
+                good.quantities_sold -= count
+                good.save()
+                merchant.income -= cost
+                merchant.save()
             
             order.state = 4
             order.save()
