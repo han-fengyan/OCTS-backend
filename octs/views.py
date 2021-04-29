@@ -189,6 +189,7 @@ def pay(request):
         good.quantities_sold += order.count
         good.save()
 
+
         return gen_response(200,"you have paid successfully")
 
 
@@ -265,7 +266,7 @@ def orderstate(request):
         order.state = change
         order.save()
 
-        if change == 3 :
+        if order.state == 3 :
             merchant.income += order.cost
             merchant.save()
         
