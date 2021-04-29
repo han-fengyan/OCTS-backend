@@ -172,6 +172,7 @@ def pay(request):
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "good doesn't exist") 
 
+        cost = order.cost
         if cost < 0:
             return gen_response(500,"cost is wronng")        
 
@@ -331,15 +332,23 @@ def display_money(request):
         except Exception :
             return gen_response(500, "unexpected error")
 
-        if identify(token):
-            if r == 'user':
+        try:
+            payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
+            exp = payload['exp']
+            m = payload['username']
+        
+        except Exception :
+            return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
+        
+        if (exp - time.time() > 0) :
+            if r == 'user' and User.objects.filter(name = m):
                 m = User.objects.get(name = n)
                 return gen_response(200,m.money)
-            elif r == 'merchant' :
+            if r == 'merchant' and Merchant.objects.filter(name = m):
                 m = Merchant.objects.get(name = n) 
                 return gen_response(200, m.income)
         else :
-            return gen_response(HTTPStatus.BAD_REQUEST,"please login")
+            return gen_response(444,'not login')
 
     return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please request with post")
 
@@ -434,7 +443,8 @@ def is_login(request):
             m = payload['username']
 
         except Exception :
-            return gen_response()
+            return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
+
         if (exp - time.time() > 0) :
             if user == 'user' and User.objects.filter(name = m):
                 return gen_response(200,"success")

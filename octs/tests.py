@@ -91,11 +91,12 @@ class MyTest(TestCase):
     def test_no_login(self):
         bob = User.objects.get(name = "Bob")
         alice = User.objects.get(name = "Alice")
-        order = {
+        o = {
             'user': 'user',
             'token' : bob.token,
         }
-        res = self.client.post('/is_login/',data=order,content_type = jsontype)
+        res = self.client.post('/is_login/',data=o,content_type = jsontype)
+        print(res.content)
         # self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],444)
 
 
