@@ -119,11 +119,11 @@ def order(request):
         now_price = good.discount
         if money < now_price * count :
             return gen_response(406, "money is not enough")
+        #超过库存
         if count > good.quantities_of_inventory:
             return gen_response(406, "quantity of goods is not enough")
         #更新商品与用户信息
         good.quantities_of_inventory -= count
-        # good.quantities_sold += count
         good.save()
 
         number = str(time.time())[0:10]+str(time.time())[11:18] + str(random.randint(10000,99999)) + str(goodid) + str(random.randint(10000,99999)) 

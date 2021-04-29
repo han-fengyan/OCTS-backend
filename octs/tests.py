@@ -17,6 +17,7 @@ class MyTest(TestCase):
         Good.objects.create(name="name", desc="description", quantities_of_inventory=3,
                 quantities_sold=4, price=17, discount=15, available=True)
         Merchant.objects.create(name="merchant",password="merchant123")
+
         self.client.post('/login/', data = json.dumps({"username":"Alice","password":"123456"}) , content_type = jsontype)
         self.client.post('/login/', data = json.dumps({"username":"Bob","password":"123456"}) , content_type = jsontype)
         self.client.post('/merchantlogin/',data=json.dumps({'name':'merchant','password':'merchant123'}),content_type=jsontype )
@@ -151,7 +152,6 @@ class MyTest(TestCase):
         self.assertEqual(json.loads(res1.content.decode('utf-8'))['code'],HTTPStatus.BAD_REQUEST)
         res2 = self.client.post('/order/',data=json.dumps(order),content_type = jsontype)
         self.assertEqual(json.loads(res2.content.decode('utf-8'))['code'],200)
-        alice = User.objects.get(name = 'Alice') 
         test_good = Good.objects.get(name= 'name')
         self.assertEqual(test_good.quantities_of_inventory,2)
         self.assertEqual(test_good.quantities_sold,4)
