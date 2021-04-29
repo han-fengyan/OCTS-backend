@@ -255,6 +255,6 @@ class MyTest(TestCase):
             'name': 'merchant',
             'token': 'asdh',
         } 
-        res = self.client.post('/display_money',data=json.dumps(data),content_type=jsontype)
+        res = self.client.post('/display_money/',data=json.dumps(data),content_type=jsontype)
         self.assertEqual(json.loads(res.content.decode())['code'],200)
         
