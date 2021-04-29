@@ -305,10 +305,14 @@ def identify(token):
     try:
         payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
         exp = payload['exp']
+        name = payload['username']
     except Exception :
         return False
 
-    if (exp - time.time() > 0) and User.objects.filter(name = payload['username']):
+    if name == 'merchant' and (exp - time.time()) > 0:
+        return True
+        
+    elif (exp - time.time() > 0) and User.objects.filter(name = payload['username']):
         return True
     else:
         return False
