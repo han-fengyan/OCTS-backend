@@ -293,7 +293,7 @@ def add_draft(request):
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,
                             "please save your draft with post")
     draft = Draft()
-    print(request.POST, )
+    print(request.POST)
     try:  # 从表单中拿出数据
         name = request.POST["title"]
         draft.name = name
@@ -406,4 +406,62 @@ def commit_draft(request):
 
 
 def edit_draft(request):
-    pass
+    if request.method != 'POST':
+        return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,
+                            "please save your draft with post")
+    draft_id = request.POST['id']
+    draft = Draft.objects.get(id=draft_id)
+    try:  # 从表单中拿出数据
+        name = request.POST["title"]
+        draft.name = name
+    except KeyError:
+        pass
+    try:
+        quantities_of_inventory = request.POST["store"]
+        if quantities_of_inventory != '':
+            draft.quantities_of_inventory = quantities_of_inventory
+    except KeyError:
+        pass
+    try:
+        description = request.POST["introduction"]
+        draft.desc = description
+    except KeyError:
+        pass
+    try:
+        quantities_sold = request.POST['sell']
+        if quantities_sold != '':
+            draft.quantities_sold = quantities_sold
+    except KeyError:
+        pass
+    try:
+        cur_price = request.POST['now_price']
+        if cur_price != '':
+            draft.discount = cur_price
+    except KeyError:
+        pass
+    try:
+        ori_price = request.POST['old_price']
+        if ori_price != '':
+            draft.price = ori_price
+    except KeyError:
+        pass
+    draft.save()
+    try:
+        pictures = request.FILES.getlist('pictures')
+        for picture in pictures:
+            pic = Picture(file=picture, draft=draft)
+            pic.save()
+    except KeyError:
+        pass
+    try:
+        deleted_pictures = request.POST['delete']
+        pictures = deleted_pictures.split('\n')[:-1]
+        for picture in pictures:
+            url = picture[53:]
+            try:
+                picture = Picture.objects.get(file=url)
+                picture.delete()
+            except:
+                pass
+    except KeyError:
+        pass
