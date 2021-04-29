@@ -422,18 +422,25 @@ def is_login(request):
             token = json_data['token']
             user = json_data['user']
 
-        # except KeyError :
-        #     return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
-        # except Exception :
-        #     return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
+        except KeyError :
+            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
+        except Exception :
+            return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
 
-        # try:
-        #     payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
-        #     exp = payload['exp']
-        #     m = payload['username']
-        # except Exception :
-        #     return gen_response()
-        # if user == 'user':
+        try:
+            payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
+            exp = payload['exp']
+            m = payload['username']
 
+        except Exception :
+            return gen_response()
+        if (exp - time.time() > 0) :
+            if user == 'user' and User.objects.filter(name = m):
+                return gen_response(200,"success")
+            if user == 'merchant' and Merchant.objects.filter(name = m):
+                return gen_response(200,"success")
+        else :
+            return gen_response(444,'not login')
+            
     return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please modify an order with post")
     
