@@ -350,7 +350,7 @@ def display_money(request):
         #         return gen_response(200,merchant.income)
         # else :
         #     return gen_response(444,'not login')
-        
+
         if r == 'user' and User.objects.filter(name = name):
             user = User.objects.get(name = name)
             return gen_response(200,user.money)
@@ -394,7 +394,7 @@ def cancel_order(request):
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "good doesn't exist")  
 
-        #刚下单
+        #刚下单 返库存
         if nowstate == 0:
             good.quantities_of_inventory += count
             good.save()
@@ -417,7 +417,7 @@ def cancel_order(request):
             good.quantities_sold -= count
             good.save()
 
-        #已收货   不允许退货
+        #已收货   不允许取消订单
         if nowstate == 3 :
             return (400,"don't allow")
         
