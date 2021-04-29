@@ -97,7 +97,7 @@ def order(request):
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
         
         if count <= 0 or type(count) != int:
-            return gen_response(500, "message is invalid") 
+            return gen_response(400, "message is invalid") 
 
 
         #判断数据库是否有该用户或者商品
@@ -170,7 +170,7 @@ def pay(request):
 
         cost = order.cost
         if cost < 0:
-            return gen_response(500,"cost is wronng")        
+            return gen_response(400,"cost is wronng")        
 
         if user.money < cost :
             return gen_response(HTTPStatus.BAD_REQUEST, "money is not enough")
@@ -329,7 +329,7 @@ def display_money(request):
             name = json_data['name']
             token = json_data['token']
         except Exception :
-            return gen_response(500, "unexpected error")
+            return gen_response(400, "unexpected error")
 
         try:
             payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
@@ -389,10 +389,9 @@ def cancel_order(request):
             if nowstate == 0:
                 good.quantities_of_inventory += count
                 good.save()
-                # good.quantities_sold += count
 
             #支付未发货，返库存，返用户钱
-            if nowstate == 1:
+            elif nowstate == 1:
                 user.money += cost 
                 user.save()
                 good.quantities_of_inventory += count
@@ -401,7 +400,7 @@ def cancel_order(request):
 
             
             #已发货 
-            if nowstate == 2:
+            elif nowstate == 2:
                 user.money += cost 
                 user.save()
                 good.quantities_of_inventory += count
@@ -409,8 +408,14 @@ def cancel_order(request):
                 good.save()
 
             #已收货   不允许取消订单
-            if nowstate == 3 :
-                return (400,"don't allow")
+            elif nowstate == 3 :
+                user.money += cost 
+                user.save()
+                good.quantities_of_inventory += count
+                good.quantities_sold -= count
+                good.save()
+                merchant.income -= cost
+                merchant.save()
             
             order.state = 4
             order.save()
