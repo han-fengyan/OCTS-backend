@@ -318,6 +318,7 @@ def identify(token):
 
 @csrf_exempt
 def display_money(request):
+    
     if request.method == 'POST':
         try:
             json_data = json.loads(request.body.decode('utf-8'))
@@ -327,29 +328,35 @@ def display_money(request):
         
         try:
             r = json_data['role'] 
-            n = json_data['name']
+            name = json_data['name']
             token = json_data['token']
         except Exception :
             return gen_response(500, "unexpected error")
 
-        try:
-            payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
-            exp = payload['exp']
-            m = payload['username']
+        # try:
+        #     payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
+        #     exp = payload['exp']
+        #     m = payload['username']
         
-        except Exception :
-            return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
+        # except Exception :
+        #     return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
         
-        if (exp - time.time() > 0) :
-            if r == 'user' and User.objects.filter(name = m):
-                m = User.objects.get(name = n)
-                return gen_response(200,m.money)
-            if r == 'merchant' and Merchant.objects.filter(name = m):
-                m = Merchant.objects.get(name = n) 
-                return gen_response(200, m.income)
-        else :
-            return gen_response(444,'not login')
-
+        # if (exp - time.time() > 0) :
+        #     if r == 'user' and User.objects.filter(name = m):
+        #         user = User.objects.get(name = m)
+        #         return gen_response(200,user.money)
+        #     if r == 'merchant' and Merchant.objects.filter(name = m):
+        #         merchant = Merchant.objects.get(name = m) 
+        #         return gen_response(200,merchant.income)
+        # else :
+        #     return gen_response(444,'not login')
+        if r == 'user' and User.objects.filter(name = name):
+            user = User.objects.get(name = name)
+            return gen_response(200,user.money)
+        if r == 'merchant' and Merchant.objects.filter(name = name):
+            merchant = Merchant.objects.get(name = name) 
+            return gen_response(200,merchant.income)
+            
     return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please request with post")
 
 @csrf_exempt
