@@ -343,6 +343,7 @@ def display_money(request):
 
     return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please request with post")
 
+@csrf_exempt
 def cancel_order(request):
     if request.method == 'POST':
         try:
@@ -408,3 +409,39 @@ def cancel_order(request):
         return gen_response(200,"you have cancel the order successfully")
 
     return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please modify an order with post")
+
+@csrf_exempt
+def is_login(request):
+    if request.method == 'POST':
+        try:
+            json_data = json.loads(request.body.decode('utf-8'))
+
+        except ValueError :
+            return gen_response(HTTPStatus.BAD_REQUEST, "wrong json datatype") 
+
+        try:
+            token = json_data['token']
+            user = json_data['user']
+
+        except KeyError :
+            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
+        except Exception :
+            return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
+
+        try:
+            payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
+            exp = payload['exp']
+            m = payload['username']
+
+        except Exception :
+            return gen_response()
+        if (exp - time.time() > 0) :
+            if user == 'user' and User.objects.filter(name = m):
+                return gen_response(200,"success")
+            if user == 'merchant' and Merchant.objects.filter(name = m):
+                return gen_response(200,"success")
+        else :
+            return gen_response(444,'not login')
+            
+    return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please modify an order with post")
+    
