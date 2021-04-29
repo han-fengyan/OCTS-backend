@@ -97,7 +97,7 @@ def order(request):
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
         
         if count <= 0 or type(count) != int:
-            return gen_response(500, "message is invalid") 
+            return gen_response(400, "message is invalid") 
 
 
         #判断数据库是否有该用户或者商品
@@ -170,7 +170,7 @@ def pay(request):
 
         cost = order.cost
         if cost < 0:
-            return gen_response(500,"cost is wronng")        
+            return gen_response(400,"cost is wronng")        
 
         if user.money < cost :
             return gen_response(HTTPStatus.BAD_REQUEST, "money is not enough")
@@ -328,7 +328,7 @@ def display_money(request):
             name = json_data['name']
             token = json_data['token']
         except Exception :
-            return gen_response(500, "unexpected error")
+            return gen_response(400, "unexpected error")
 
         try:
             payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
