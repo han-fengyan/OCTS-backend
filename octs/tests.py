@@ -88,18 +88,16 @@ class MyTest(TestCase):
         self.assertTrue(s['exp']>s['iat'])
         self.assertTrue(s['exp']<s['iat']+86401)
 
-    # def test_no_login(self):
-    #     test_good = Good.objects.get(name= 'name')
-    #     bob = User.objects.get(name = "Bob")
-    #     order = {
-    #         'username': 'Bob',
-    #         'goodid': test_good.id,
-    #         'count' : 1,
-    #         'token' : bob.token,
-    #     }
-    #     res = self.client.post('/order/',data=order,content_type = jsontype)
-    #     print(res.content)
-        # self.assertEqual(json.loads(res.content.decode('utf-8'))['data'],"user doesn't login")
+    def test_no_login(self):
+        bob = User.objects.get(name = "Bob")
+        alice = User.objects.get(name = "Alice")
+        o = {
+            'user': 'user',
+            'token' : bob.token,
+        }
+        res = self.client.post('/is_login/',data=o,content_type = jsontype)
+        print(res.content)
+        # self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],444)
 
 
     def test_place_order(self):
