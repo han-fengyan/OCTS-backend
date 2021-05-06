@@ -143,11 +143,26 @@ class MyTest(TestCase):
             'count' : 1,
             'token' : bob.token,
         }
+        wrong_key ={
+            'username': 'Alice',
+            'goodid': test_good.id,
+            'count' : 1,
+            'tok' : alice.token,
+        }
+        wrong_c ={
+            'username': 'Alice',
+            'goodid': test_good.id,
+            'count' : -1,
+            'tok' : alice.token,
+        }
         res = self.client.get('/order/')
         self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],HTTPStatus.METHOD_NOT_ALLOWED)
         self.client.post('/order/',data=json.dumps(wrong_name),content_type = jsontype)
         self.client.post('/order/',data=json.dumps(wrong_id),content_type = jsontype)
         self.client.post('/order/',data=json.dumps(wrong_count),content_type = jsontype)
+        self.client.post('/order/',data=json.dumps(wrong_key),content_type = jsontype)
+        self.client.post('/order/',data=json.dumps(wrong_c),content_type = jsontype)
+        
         res = self.client.post('/order/',data=json.dumps(no_login),content_type = jsontype)
         self.assertEqual(json.loads(res.content.decode('utf-8'))['data'],"user doesn't login now")
 
@@ -225,8 +240,9 @@ class MyTest(TestCase):
 
     def test_order_state(self):
         self.place_order()
+        
         data={
-            'orderid' :Order.objects.get(id =1).orderid,
+            'orderid' :Order.objects.get(id = 2).orderid,
             'change' : 2
         }        
         res = self.client.post('/orderstate/', data=json.dumps(data),content_type = jsontype)
