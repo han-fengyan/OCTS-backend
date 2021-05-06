@@ -10,9 +10,6 @@ class User(models.Model):
     money = models.FloatField(default=10000)
     token = models.CharField(max_length =500,default=None,null=True)
 
-    def __str__(self):
-        return self.name
-
 class Coupon(models.Model):
     name = models.CharField(max_length=20,default="优惠券")
     describe = models.CharField(max_length=200,default="可以对任意商品使用")
