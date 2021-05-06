@@ -297,6 +297,7 @@ def merchantlogin(request):
                     
         else:
             return gen_response(401, "password is wrong!")
+    return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please post")
 
 def identify(token):
     try:

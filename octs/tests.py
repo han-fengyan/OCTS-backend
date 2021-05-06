@@ -3,6 +3,7 @@ from django.conf import settings
 from .models import User, Coupon ,Order, Merchant, Seckill
 from goods.models import Good, Picture
 from http import HTTPStatus
+import octs.views
 import json
 import jwt
 import time
@@ -319,6 +320,8 @@ class MyTest(TestCase):
             'username':'charls',
             'password': 'asdasd'
         }
+        self.client.get('/merchantlogin/')
+        self.client.post('/merchantlogin/', data = a)
         res1 = self.client.post('/merchantlogin/', data = json.dumps(a) , content_type = jsontype)
         res2 = self.client.post('/merchantlogin/', data = json.dumps(b) , content_type = jsontype)
         res3 = self.client.post('/merchantlogin/', data = json.dumps(c) , content_type = jsontype)
@@ -327,7 +330,6 @@ class MyTest(TestCase):
         self.assertEqual(res1['code'],201)
         self.assertJSONEqual(res2.content,{'code':401 ,'data': "password is wrong!"})
         self.assertJSONEqual(res3.content,{'code':400 ,'data': "merchant doesn't exist"})
-
 
     def test_display_money(self):
         data ={
