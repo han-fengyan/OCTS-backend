@@ -24,7 +24,6 @@ class MyTest(TestCase):
         #过期登陆用户：
         dic = {
             'exp': time.time(), #过期时间
-            # 'iat': time.time(),#开始时间
             'username': "Bob",                                   
         }
         s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256')
