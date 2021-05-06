@@ -30,9 +30,6 @@ def signup(request):
             password = json_data['password']
         except Exception :
             return gen_response(400, "message is invalid")
-        
-        if username is None or password is None:
-            return gen_response(400, "message is invalid")
 
         #需要判断是否已经有重复用户名，并将查询结果返回前端
         inuser = User.objects.filter(name=username)

@@ -164,13 +164,13 @@ class MyTest(TestCase):
             'username': 'Alice',
             'goodid': test_good.id,
             'count' : -1,
-            'tok' : alice.token,
+            'token' : alice.token,
         }
         wrong_g ={
             'username': 'Alice',
             'goodid': Good.objects.get(name='n').id,
             'count' : -1,
-            'tok' : alice.token,
+            'token' : alice.token,
         }
         res = self.client.get('/order/')
         self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],HTTPStatus.METHOD_NOT_ALLOWED)
@@ -269,6 +269,7 @@ class MyTest(TestCase):
             'cost' : order.cost,
             'token': alice.token,
         }
+        self.client.get('/pay/')
         self.client.post('/pay/', data=data)
         self.client.post('/pay/', data=json.dumps(wrong_data1),content_type = jsontype)
         self.client.post('/pay/', data=json.dumps(wrong_data2),content_type = jsontype)
