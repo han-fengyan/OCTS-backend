@@ -40,7 +40,7 @@ class MyTest(TestCase):
         }
         user1 = {
             'username': "Marry",
-            'password': "",
+            'password': " ",
         }
         response = self.client.post('/signup/', data=json.dumps(user), content_type=jsontype)
         self.client.post('/signup/', data=json.dumps(user1), content_type=jsontype)
@@ -373,7 +373,7 @@ class MyTest(TestCase):
             'orderid':Order.objects.get(id = 2).orderid,
             'token': User.objects.get(name = 'Alice').token,
         }
-        res = self.client.post('/cancel_order/', data=json.dumps(data1),content_type = jsontype)
+        self.client.post('/cancel_order/', data=json.dumps(data1),content_type = jsontype)
 
         #更改订单状态
         data={
@@ -381,6 +381,15 @@ class MyTest(TestCase):
             'change':2,
         }
         self.client.post('/orderstate/', data=json.dumps(data),content_type = jsontype)
+        res=self.client.post('/cancel_order/', data=json.dumps(data1),content_type = jsontype)
+        self.assertEqual(json.loads(res.content.decode())['code'],200)
+
+        data={
+            'orderid':Order.objects.get(id = 2).orderid,
+            'change':3,
+        }
+        self.client.post('/orderstate/', data=json.dumps(data),content_type = jsontype)
+        self.client.post('/cancel_order/', data=json.dumps(data1),content_type = jsontype)
 
         #各种错误情况
         w1={
@@ -401,6 +410,3 @@ class MyTest(TestCase):
         self.client.post('/cancel_order/', data=json.dumps(w1),content_type = jsontype)      
         self.client.post('/cancel_order/', data=json.dumps(w2),content_type = jsontype)   
         self.client.post('/cancel_order/', data=json.dumps(w3),content_type = jsontype)      
-
-        res = self.client.post('/cancel_order/', data=json.dumps(data1),content_type = jsontype)
-        self.assertEqual(json.loads(res.content.decode())['code'],200)
