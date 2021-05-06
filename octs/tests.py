@@ -106,6 +106,9 @@ class MyTest(TestCase):
             'user': 'user',
             'token' : bob.token,
         }
+        
+        self.client.post('/is_login/',data=o)
+        self.client.get('/is_login/')
         res = self.client.post('/is_login/',data=json.dumps(o),content_type = jsontype)
         self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],444)
         res = self.client.post('/is_login/',data=json.dumps(data),content_type = jsontype)
@@ -280,21 +283,21 @@ class MyTest(TestCase):
         self.assertEqual(json.loads(res.content.decode())['data'],"money is not enough")
 
         self.client.post('/pay/', data=json.dumps({'username':'me'}),content_type = jsontype)
-        self.client.post('pay/',json.dumps({'username':'se','orderid':1,'cost':1}),content_type = jsontype)
-        self.client.get('pay/')
+        self.client.post('/pay/',json.dumps({'username':'se','orderid':1,'cost':1}),content_type = jsontype)
+        self.client.get('/pay/')
 
     def test_order_state(self):
         self.place_order()
         data={
-            'orderid':Order.objects.get(id = 2).orderid,
+            'orderid':Order.objects.get(id = 1).orderid,
             'change':2,
         }
         w_data1={
-            'ordid':Order.objects.get(id = 2).orderid,
+            'ordid':Order.objects.get(id = 1).orderid,
             'change':2,
         }
         w_data2={
-            'orderid':Order.objects.get(id = 2).orderid+str(1),
+            'orderid':Order.objects.get(id = 1).orderid+str(1),
             'change':2,
         }
         self.client.get('/orderstate/')  
