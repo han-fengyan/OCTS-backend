@@ -287,7 +287,20 @@ class MyTest(TestCase):
         data={
             'orderid':Order.objects.get(id = 2).orderid,
             'change':2,
-        }        
+        }
+        w_data1={
+            'ordid':Order.objects.get(id = 2).orderid,
+            'change':2,
+        }
+        w_data2={
+            'orderid':Order.objects.get(id = 2).orderid+str(1),
+            'change':2,
+        }
+        self.client.get('/orderstate/')  
+        self.client.post('/orderstate/', data=data)  
+        self.client.post('/orderstate/', data=json.dumps(w_data1),content_type = jsontype)      
+        self.client.post('/orderstate/', data=json.dumps(w_data2),content_type = jsontype)      
+        
         res = self.client.post('/orderstate/', data=json.dumps(data),content_type = jsontype)
         self.assertEqual(json.loads(res.content.decode())['code'],200)
 
