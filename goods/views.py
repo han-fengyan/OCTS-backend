@@ -1,6 +1,7 @@
 from django.http import JsonResponse, HttpResponse
 from http import HTTPStatus
-from .models import Good, Picture, Category, Keyword, Favourite, Draft
+from .models import Good, Picture, Tag, Keyword, Favourite, Draft, Comment
+from octs.views import identify
 from octs.models import User
 import json
 import jieba
@@ -182,7 +183,9 @@ def detail(request, id):
             old_price=product.price, now_price=product.discount,
             sell=product.quantities_sold,
             store=product.quantities_of_inventory, available=product.available,
-            pictures=[picture.file.url for picture in product.picture_set.all()]))
+            pictures=[picture.file.url for picture in product.picture_set.all()],
+            comments=[{'name': comment.user.name[0], 'comment': comment.comment} for comment in product.comment_set.all()]
+        ))
     except Exception:
         return gen_response(HTTPStatus.NOT_FOUND, "product not found")
 
@@ -465,3 +468,27 @@ def edit_draft(request):
                 pass
     except KeyError:
         pass
+    return gen_response(HTTPStatus.OK, "")
+
+
+def new_tag(request):
+    json_data = json.loads(request.body.decode('utf-8'))
+    tag_name = json_data['name']
+    token = json_data['token']
+    if not identify(token):
+        return gen_response(HTTPStatus.SERVICE_UNAVAILABLE, "")
+    tag = Tag(name=tag_name)
+    tag.save()
+    return gen_response(HTTPStatus.OK, '')
+
+
+def comment(request):
+    json_data = json.loads(request.body.decode('utf-8'))
+    # if not identify(token):
+    #     return gen_response(HTTPStatus.SERVICE_UNAVAILABLE, "")
+    username = json_data['username']
+    product = Good.objects.get(id=json_data['id'])
+    content = json_data['comment']
+    comment = Comment(user=User.objects.get(name=username), good=product, comment=content)
+    comment.save()
+    return gen_response(HTTPStatus.OK, "")
