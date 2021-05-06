@@ -1,5 +1,7 @@
 from django.db import models
 from octs.models import Seckill, User
+
+
 # Create your models here.
 
 
@@ -32,22 +34,23 @@ class Picture(models.Model):
     draft = models.ForeignKey(Draft, on_delete=models.CASCADE, null=True, blank=True)
 
 
-class Category(models.Model):
+class Tag(models.Model):
     name = models.CharField(max_length=50)
     products = models.ManyToManyField(Good)
-
-    def __str__(self):
-        return self.name
 
 
 class Keyword(models.Model):
     keyword = models.CharField(max_length=100)
     products = models.ManyToManyField(Good)
 
-    def __str__(self):
-        return self.keyword
-
 
 class Favourite(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
     goods = models.ManyToManyField(Good)
+
+
+class Comment(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    good = models.ForeignKey(Good, on_delete=models.CASCADE)
+    rate = models.IntegerField(default=5)
+    comment = models.CharField(max_length=500)

@@ -1,7 +1,8 @@
 from django.http import JsonResponse, HttpResponse
 from http import HTTPStatus
-from .models import Good, Picture, Category, Keyword, Favourite, Draft
-from octs.models import User
+from .models import Good, Picture, Tag, Keyword, Favourite, Draft, Comment
+from octs.views import identify
+from octs.models import User, Order
 import json
 import jieba
 
@@ -182,7 +183,9 @@ def detail(request, id):
             old_price=product.price, now_price=product.discount,
             sell=product.quantities_sold,
             store=product.quantities_of_inventory, available=product.available,
-            pictures=[picture.file.url for picture in product.picture_set.all()]))
+            pictures=[picture.file.url for picture in product.picture_set.all()],
+            comments=[{'username': comment.user.name[0], 'comment': comment.comment, 'rating': comment.rate} for comment in product.comment_set.all()]
+        ))
     except Exception:
         return gen_response(HTTPStatus.NOT_FOUND, "product not found")
 
@@ -428,12 +431,6 @@ def edit_draft(request):
     except KeyError:
         pass
     try:
-        quantities_sold = request.POST['sell']
-        if quantities_sold != '':
-            draft.quantities_sold = quantities_sold
-    except KeyError:
-        pass
-    try:
         cur_price = request.POST['now_price']
         if cur_price != '':
             draft.discount = cur_price
@@ -465,3 +462,36 @@ def edit_draft(request):
                 pass
     except KeyError:
         pass
+    return gen_response(HTTPStatus.OK, "")
+
+
+def new_tag(request):
+    json_data = json.loads(request.body.decode('utf-8'))
+    tag_name = json_data['name']
+    token = json_data['token']
+    if not identify(token):
+        return gen_response(HTTPStatus.SERVICE_UNAVAILABLE, "")
+    tag = Tag(name=tag_name)
+    tag.save()
+    return gen_response(HTTPStatus.OK, '')
+
+
+def add_tag(request):
+    json_data = json.loads(request.body.decode('utf-8'))
+    tag = Tag.objects.get(name=json_data['tag'])
+    product = Good.objects.get(id=json_data['id'])
+    tag.products.add(product)
+    return gen_response(HTTPStatus.OK, "")
+
+
+def comment(request):
+    token = request.POST['token']
+    if not identify(token):
+        return gen_response(HTTPStatus.SERVICE_UNAVAILABLE, "")
+    username = request.POST['username']
+    product = Good.objects.get(id=Order.objects.get(id=request.POST['id']).goodid)
+    content = request.POST['comment']
+    rating = request.POST['rate']
+    comment = Comment(user=User.objects.get(name=username), good=product, comment=content, rate=rating)
+    comment.save()
+    return gen_response(HTTPStatus.OK, "")

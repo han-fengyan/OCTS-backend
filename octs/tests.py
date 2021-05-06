@@ -3,6 +3,7 @@ from django.conf import settings
 from .models import User, Coupon ,Order, Merchant, Seckill
 from goods.models import Good, Picture
 from http import HTTPStatus
+import octs.views
 import json
 import jwt
 import time
@@ -16,6 +17,8 @@ class MyTest(TestCase):
         bob = User.objects.create(name="Bob", password="123456")
         Good.objects.create(name="name", desc="description", quantities_of_inventory=3,
                 quantities_sold=4, price=17, discount=15, available=True)
+        Good.objects.create(name="n", desc="description", quantities_of_inventory=3,
+                quantities_sold=4, price=17, discount=15, available=False)
         Merchant.objects.create(name="merchant",password="merchant123")
 
         self.client.post('/login/', data = json.dumps({"username":"Alice","password":"123456"}) , content_type = jsontype)
@@ -24,7 +27,6 @@ class MyTest(TestCase):
         #过期登陆用户：
         dic = {
             'exp': time.time(), #过期时间
-            'iat': time.time(),#开始时间
             'username': "Bob",                                   
         }
         s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256')
@@ -36,7 +38,12 @@ class MyTest(TestCase):
             'username': "Marry",
             'password': "123456",
         }
+        user1 = {
+            'username': "Marry",
+            'password': " ",
+        }
         response = self.client.post('/signup/', data=json.dumps(user), content_type=jsontype)
+        self.client.post('/signup/', data=json.dumps(user1), content_type=jsontype)
         self.assertJSONEqual(response.content, {'code': 201, 'data': 'sign up successfully'})
         self.assertTrue(User.objects.filter(name="Marry").exists())
 
@@ -86,8 +93,7 @@ class MyTest(TestCase):
         res = json.loads(res.content.decode())
         s = res['token']
         s = jwt.decode(s, settings.SECRET_KEY, algorithms=['HS256'])  
-        self.assertTrue(s['exp']>s['iat'])
-        self.assertTrue(s['exp']<s['iat']+86401)
+        self.assertTrue(s['exp']<time.time()+86401)
 
     def test_no_login(self):
         bob = User.objects.get(name = "Bob")
@@ -100,6 +106,14 @@ class MyTest(TestCase):
             'user': 'user',
             'token' : bob.token,
         }
+        w = {
+            'ur': 'user',
+            'token' : bob.token,
+        }
+        
+        self.client.post('/is_login/',data=o)
+        self.client.get('/is_login/')
+        self.client.post('/is_login/',data=json.dumps(w),content_type = jsontype)
         res = self.client.post('/is_login/',data=json.dumps(o),content_type = jsontype)
         self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],444)
         res = self.client.post('/is_login/',data=json.dumps(data),content_type = jsontype)
@@ -131,7 +145,7 @@ class MyTest(TestCase):
         wrong_count = {
             'username': 'Alice',
             'goodid': test_good.id,
-            'count' : 100000,
+            'count' : 10,
             'token' : alice.token,
         }
         no_login = {
@@ -140,11 +154,33 @@ class MyTest(TestCase):
             'count' : 1,
             'token' : bob.token,
         }
+        wrong_key ={
+            'username': 'Alice',
+            'goodid': test_good.id,
+            'count' : 1,
+            'tok' : alice.token,
+        }
+        wrong_c ={
+            'username': 'Alice',
+            'goodid': test_good.id,
+            'count' : -1,
+            'token' : alice.token,
+        }
+        wrong_g ={
+            'username': 'Alice',
+            'goodid': Good.objects.get(name='n').id,
+            'count' : -1,
+            'token' : alice.token,
+        }
         res = self.client.get('/order/')
         self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],HTTPStatus.METHOD_NOT_ALLOWED)
         self.client.post('/order/',data=json.dumps(wrong_name),content_type = jsontype)
         self.client.post('/order/',data=json.dumps(wrong_id),content_type = jsontype)
         self.client.post('/order/',data=json.dumps(wrong_count),content_type = jsontype)
+        self.client.post('/order/',data=json.dumps(wrong_key),content_type = jsontype)
+        self.client.post('/order/',data=json.dumps(wrong_c),content_type = jsontype)
+        self.client.post('/order/',data=json.dumps(wrong_g),content_type = jsontype)
+        
         res = self.client.post('/order/',data=json.dumps(no_login),content_type = jsontype)
         self.assertEqual(json.loads(res.content.decode('utf-8'))['data'],"user doesn't login now")
 
@@ -170,7 +206,6 @@ class MyTest(TestCase):
             'goodid': Good.objects.get(name='name').id,
             'count' : 2,
             'token' : alice.token,
-
         }
         self.client.post('/order/',data=json.dumps(order),content_type = jsontype)
         self.client.post('/order/',data=json.dumps(order1),content_type = jsontype)
@@ -179,11 +214,24 @@ class MyTest(TestCase):
     def test_user_order_and_orderlist(self):
         test_good = Good.objects.get(name= 'name')
         alice = User.objects.get(name = 'Alice')
+        bob = User.objects.get(name='Bob')
         self.place_order()
         data = {
             'username':'Alice',
             'token': alice.token
         }
+        wrong_data1 = {
+            'user':'Alice',
+            'token': alice.token
+        }
+        wrong_data2 = {
+            'username':'Bob',
+            'token': bob.token
+        }
+        self.client.post('/userorder/', data=data)
+        self.client.post('/userorder/', data=json.dumps(wrong_data1),content_type = jsontype)
+        self.client.post('/userorder/', data=json.dumps(wrong_data2),content_type = jsontype)
+
         res = self.client.post('/userorder/', data=json.dumps(data),content_type = jsontype)
         for order in json.loads(res.content.decode())['data']:
             self.assertEqual(order['name'],test_good.name)
@@ -194,7 +242,7 @@ class MyTest(TestCase):
 
     def test_pay(self):
         alice = User.objects.get(name = 'Alice')
-
+        bob = User.objects.get(name = 'Bob')
         self.place_order()
         order = Order.objects.first()
         data = {
@@ -203,6 +251,29 @@ class MyTest(TestCase):
             'cost' : order.cost,
             'token': alice.token,
         }
+        wrong_data1 = {
+            'username': 'Bob',
+            'orderid': order.orderid,
+            'cost' : order.cost,
+            'token': bob.token,
+        }
+        wrong_data2 = {
+            'username': 'Alice1',
+            'orderid': order.orderid,
+            'cost' : order.cost,
+            'token': alice.token,
+        }
+        wrong_data3 = {
+            'username': 'Alice',
+            'orderid': order.orderid,
+            'cost' : order.cost,
+            'token': alice.token,
+        }
+        self.client.get('/pay/')
+        self.client.post('/pay/', data=data)
+        self.client.post('/pay/', data=json.dumps(wrong_data1),content_type = jsontype)
+        self.client.post('/pay/', data=json.dumps(wrong_data2),content_type = jsontype)
+
         res = self.client.post('/pay/', data=json.dumps(data),content_type = jsontype)
         res = json.loads(res.content.decode())['code']
         self.assertEqual(res , 200)
@@ -218,14 +289,29 @@ class MyTest(TestCase):
         self.assertEqual(json.loads(res.content.decode())['data'],"money is not enough")
 
         self.client.post('/pay/', data=json.dumps({'username':'me'}),content_type = jsontype)
-        self.client.post('pay/',json.dumps({'username':'se','orderid':1,'cost':1}),content_type = jsontype)
+        self.client.post('/pay/',json.dumps({'username':'se','orderid':1,'cost':1}),content_type = jsontype)
+        self.client.get('/pay/')
 
     def test_order_state(self):
         self.place_order()
+        d = Order.objects.first().id
         data={
-            'orderid' :Order.objects.get(id =1).orderid,
-            'change' : 2
-        }        
+            'orderid':Order.objects.get(id = d).orderid,
+            'change':2,
+        }
+        w_data1={
+            'ordid':Order.objects.get(id = d).orderid,
+            'change':2,
+        }
+        w_data2={
+            'orderid':Order.objects.get(id = d).orderid+str(1),
+            'change':2,
+        }
+        self.client.get('/orderstate/')  
+        self.client.post('/orderstate/', data=data)  
+        self.client.post('/orderstate/', data=json.dumps(w_data1),content_type = jsontype)      
+        self.client.post('/orderstate/', data=json.dumps(w_data2),content_type = jsontype)      
+        
         res = self.client.post('/orderstate/', data=json.dumps(data),content_type = jsontype)
         self.assertEqual(json.loads(res.content.decode())['code'],200)
 
@@ -244,6 +330,8 @@ class MyTest(TestCase):
             'username':'charls',
             'password': 'asdasd'
         }
+        self.client.get('/merchantlogin/')
+        self.client.post('/merchantlogin/', data = a)
         res1 = self.client.post('/merchantlogin/', data = json.dumps(a) , content_type = jsontype)
         res2 = self.client.post('/merchantlogin/', data = json.dumps(b) , content_type = jsontype)
         res3 = self.client.post('/merchantlogin/', data = json.dumps(c) , content_type = jsontype)
@@ -253,14 +341,82 @@ class MyTest(TestCase):
         self.assertJSONEqual(res2.content,{'code':401 ,'data': "password is wrong!"})
         self.assertJSONEqual(res3.content,{'code':400 ,'data': "merchant doesn't exist"})
 
-
     def test_display_money(self):
         data ={
             'role':'merchant',
             'name': 'merchant',
             'token': Merchant.objects.get(name = 'merchant').token,
         } 
+        data1 ={
+            'role':'user',
+            'name': 'Alice',
+            'token': User.objects.get(name = 'Alice').token,
+        } 
+        data2 ={
+            'role':'user',
+            'name': 'Bob',
+            'token': User.objects.get(name = 'Bob').token,
+        } 
+        w1 = {
+            're':'merchant',
+            'name': 'merchant',
+            'token': Merchant.objects.get(name = 'merchant').token,
+        }
+        w2 = {
+            'role':'merchant',
+            'name': 'merchant',
+            'token': Merchant.objects.get(name = 'merchant').token+str(1),
+        }
+        self.client.get('/display_money/')
+        self.client.post('/display_money/',data=w1)
+        self.client.post('/display_money/',data=json.dumps(w1),content_type=jsontype)
+        self.client.post('/display_money/',data=json.dumps(w2),content_type=jsontype)
+        self.client.post('/display_money/',data=json.dumps(data1),content_type=jsontype)
+        self.client.post('/display_money/',data=json.dumps(data2),content_type=jsontype)
+
         res = self.client.post('/display_money/',data=json.dumps(data),content_type=jsontype)
         self.assertEqual(json.loads(res.content.decode())['code'],200)
     
-    
+    def test_cancel_order(self):
+        self.place_order()
+        data1={
+            'orderid':Order.objects.get(id = 2).orderid,
+            'token': User.objects.get(name = 'Alice').token,
+        }
+        self.client.post('/cancel_order/', data=json.dumps(data1),content_type = jsontype)
+
+        #更改订单状态
+        data={
+            'orderid':Order.objects.get(id = 2).orderid,
+            'change':2,
+        }
+        self.client.post('/orderstate/', data=json.dumps(data),content_type = jsontype)
+        res=self.client.post('/cancel_order/', data=json.dumps(data1),content_type = jsontype)
+        self.assertEqual(json.loads(res.content.decode())['code'],200)
+
+        data={
+            'orderid':Order.objects.get(id = 2).orderid,
+            'change':3,
+        }
+        self.client.post('/orderstate/', data=json.dumps(data),content_type = jsontype)
+        self.client.post('/cancel_order/', data=json.dumps(data1),content_type = jsontype)
+
+        #各种错误情况
+        w1={
+            'ord':Order.objects.get(id = 2).orderid,
+            'token': User.objects.get(name = 'Alice').token,
+        }
+        w2={
+            'orderid':Order.objects.get(id = 2).orderid+str(1),
+            'token': User.objects.get(name = 'Alice').token,
+        }
+        w3={
+            'orderid':Order.objects.get(id = 2).orderid+str(1),
+            'token': User.objects.get(name = 'Bob').token,
+        }
+
+        self.client.get('/cancel_order/')  
+        self.client.post('/cancel_order/', data=data)  
+        self.client.post('/cancel_order/', data=json.dumps(w1),content_type = jsontype)      
+        self.client.post('/cancel_order/', data=json.dumps(w2),content_type = jsontype)   
+        self.client.post('/cancel_order/', data=json.dumps(w3),content_type = jsontype)      
