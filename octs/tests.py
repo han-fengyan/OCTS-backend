@@ -337,6 +337,33 @@ class MyTest(TestCase):
             'name': 'merchant',
             'token': Merchant.objects.get(name = 'merchant').token,
         } 
+        data1 ={
+            'role':'user',
+            'name': 'Alice',
+            'token': User.objects.get(name = 'Alice').token,
+        } 
+        data2 ={
+            'role':'user',
+            'name': 'Bob',
+            'token': User.objects.get(name = 'Bob').token,
+        } 
+        w1 = {
+            're':'merchant',
+            'name': 'merchant',
+            'token': Merchant.objects.get(name = 'merchant').token,
+        }
+        w2 = {
+            'role':'merchant',
+            'name': 'merchant',
+            'token': Merchant.objects.get(name = 'merchant').token+str(1),
+        }
+        self.client.get('/display_money/')
+        self.client.post('/display_money/',data=w1)
+        self.client.post('/display_money/',data=json.dumps(w1),content_type=jsontype)
+        self.client.post('/display_money/',data=json.dumps(w2),content_type=jsontype)
+        self.client.post('/display_money/',data=json.dumps(data1),content_type=jsontype)
+        self.client.post('/display_money/',data=json.dumps(data2),content_type=jsontype)
+
         res = self.client.post('/display_money/',data=json.dumps(data),content_type=jsontype)
         self.assertEqual(json.loads(res.content.decode())['code'],200)
     
