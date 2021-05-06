@@ -367,4 +367,40 @@ class MyTest(TestCase):
         res = self.client.post('/display_money/',data=json.dumps(data),content_type=jsontype)
         self.assertEqual(json.loads(res.content.decode())['code'],200)
     
-    
+    def test_cancel_order(self):
+        self.place_order()
+        data1={
+            'orderid':Order.objects.get(id = 2).orderid,
+            'token': User.objects.get(name = 'Alice').token,
+        }
+        res = self.client.post('/cancel_order/', data=json.dumps(data1),content_type = jsontype)
+
+        #更改订单状态
+        data={
+            'orderid':Order.objects.get(id = 2).orderid,
+            'change':2,
+        }
+        self.client.post('/orderstate/', data=json.dumps(data),content_type = jsontype)
+
+        #各种错误情况
+        w1={
+            'ord':Order.objects.get(id = 2).orderid,
+            'token': User.objects.get(name = 'Alice').token,
+        }
+        w2={
+            'orderid':Order.objects.get(id = 2).orderid+str(1),
+            'token': User.objects.get(name = 'Alice').token,
+        }
+        w3={
+            'orderid':Order.objects.get(id = 2).orderid+str(1),
+            'token': User.objects.get(name = 'Bob').token,
+        }
+
+        self.client.get('/cancel_order/')  
+        self.client.post('/cancel_order/', data=data)  
+        self.client.post('/cancel_order/', data=json.dumps(w1),content_type = jsontype)      
+        self.client.post('/cancel_order/', data=json.dumps(w2),content_type = jsontype)   
+        self.client.post('/cancel_order/', data=json.dumps(w3),content_type = jsontype)      
+
+        res = self.client.post('/cancel_order/', data=json.dumps(data1),content_type = jsontype)
+        self.assertEqual(json.loads(res.content.decode())['code'],200)
