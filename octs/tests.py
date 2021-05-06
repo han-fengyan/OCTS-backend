@@ -24,7 +24,7 @@ class MyTest(TestCase):
         #过期登陆用户：
         dic = {
             'exp': time.time(), #过期时间
-            'iat': time.time(),#开始时间
+            # 'iat': time.time(),#开始时间
             'username': "Bob",                                   
         }
         s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256')
@@ -36,7 +36,12 @@ class MyTest(TestCase):
             'username': "Marry",
             'password': "123456",
         }
+        user1 = {
+            'username': "Marry",
+            'password': "",
+        }
         response = self.client.post('/signup/', data=json.dumps(user), content_type=jsontype)
+        self.client.post('/signup/', data=json.dumps(user1), content_type=jsontype)
         self.assertJSONEqual(response.content, {'code': 201, 'data': 'sign up successfully'})
         self.assertTrue(User.objects.filter(name="Marry").exists())
 
@@ -86,8 +91,7 @@ class MyTest(TestCase):
         res = json.loads(res.content.decode())
         s = res['token']
         s = jwt.decode(s, settings.SECRET_KEY, algorithms=['HS256'])  
-        self.assertTrue(s['exp']>s['iat'])
-        self.assertTrue(s['exp']<s['iat']+86401)
+        self.assertTrue(s['exp']<time.time()+86401)
 
     def test_no_login(self):
         bob = User.objects.get(name = "Bob")

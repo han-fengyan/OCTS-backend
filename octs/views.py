@@ -59,7 +59,7 @@ def login(request):
             #创建token
             dic = {
                 'exp': time.time() + 23200, #过期时间
-                'iat': time.time(),#开始时间
+                # 'iat': time.time(),#开始时间
                 'username': user.name
             }
             s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256')
@@ -72,10 +72,6 @@ def login(request):
 
 @csrf_exempt
 def order(request):
-    #禁止使用get来下单
-    if request.method != 'POST':
-        return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,
-                            "please place your order with post")
     
     if request.method == 'POST':
         #是否为json表单
@@ -98,7 +94,6 @@ def order(request):
         
         if count <= 0 or type(count) != int:
             return gen_response(400, "message is invalid") 
-
 
         #判断数据库是否有该用户或者商品
         try:
@@ -126,10 +121,12 @@ def order(request):
         good.quantities_of_inventory -= count
         good.save()
 
-        number = str(time.time())[0:10]+str(time.time())[11:18] + str(random.randint(10000,99999)) + str(goodid) + str(random.randint(10000,99999)) 
-        Order.objects.create(user=user, orderid=number, goodid=goodid, name=good.name, count=count, cost = count * now_price , state = 0)
+        number = str(time.time())[0:10]+str(time.time())[11:18]+str(random.randint(10000,99999))+str(goodid)+str(random.randint(10000,99999)) 
+        Order.objects.create(user=user, orderid=number, 
+            goodid=goodid, name=good.name, count=count, cost = count * now_price , state = 0)
         return gen_response(200, number)
-
+    #禁止使用get来下单
+    return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please place your order with post")
 
 @csrf_exempt
 def pay(request):    
@@ -290,7 +287,7 @@ def merchantlogin(request):
             #创建token
             dic = {
                 'exp': time.time() + 23200, #过期时间
-                'iat': time.time(),#开始时间
+                # 'iat': time.time(),#开始时间
                 'username': user.name
             }
             s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256')
@@ -337,7 +334,6 @@ def display_money(request):
         try:
             payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
             exp = payload['exp']
-            m = payload['username']
         
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "token is wrong") 
