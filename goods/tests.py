@@ -6,7 +6,7 @@ from http import HTTPStatus
 from django.test import TestCase, Client
 from django.conf import settings
 
-from octs.models import User, Merchant
+from octs.models import User, Merchant, Order
 from .models import Good, Favourite, Draft
 
 
@@ -351,6 +351,8 @@ class GoodTest(TestCase):  # pragma: no cover
             'password': "123456",
         }
         self.client.post('/signup/', data=json.dumps(user), content_type="application/json")
+        order = Order(name='Marry', user_id=1, goodid=product.id)
+        order.save()
         dic = {
             'exp': time.time() + 23200,  # 过期时间
             'iat': time.time(),  # 开始时间
@@ -360,7 +362,7 @@ class GoodTest(TestCase):  # pragma: no cover
         # 正常测试
         response = self.client.post('/comment/', {
             'username': 'Marry',
-            'id': product.id,
+            'id': order.id,
             'comment': '针不戳',
             'token': s,
             'rate': 5,
@@ -369,7 +371,7 @@ class GoodTest(TestCase):  # pragma: no cover
         # 测试错误token
         response = self.client.post('/comment/', {
             'username': 'Marry',
-            'id': product.id,
+            'id': order.id,
             'comment': '针不戳',
             'token': '  ',
             'rate': 5,
