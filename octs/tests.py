@@ -106,9 +106,14 @@ class MyTest(TestCase):
             'user': 'user',
             'token' : bob.token,
         }
+        w = {
+            'ur': 'user',
+            'token' : bob.token,
+        }
         
         self.client.post('/is_login/',data=o)
         self.client.get('/is_login/')
+        self.client.post('/is_login/',data=json.dumps(w),content_type = jsontype)
         res = self.client.post('/is_login/',data=json.dumps(o),content_type = jsontype)
         self.assertEqual(json.loads(res.content.decode('utf-8'))['code'],444)
         res = self.client.post('/is_login/',data=json.dumps(data),content_type = jsontype)
@@ -288,16 +293,17 @@ class MyTest(TestCase):
 
     def test_order_state(self):
         self.place_order()
+        d = Order.objects.first().id
         data={
-            'orderid':Order.objects.get(id = 1).orderid,
+            'orderid':Order.objects.get(id = d).orderid,
             'change':2,
         }
         w_data1={
-            'ordid':Order.objects.get(id = 1).orderid,
+            'ordid':Order.objects.get(id = d).orderid,
             'change':2,
         }
         w_data2={
-            'orderid':Order.objects.get(id = 1).orderid+str(1),
+            'orderid':Order.objects.get(id = d).orderid+str(1),
             'change':2,
         }
         self.client.get('/orderstate/')  
