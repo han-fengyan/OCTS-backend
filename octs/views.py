@@ -390,17 +390,8 @@ def cancel_order(request):
                 good.quantities_of_inventory += count
                 good.save()
 
-            #支付未发货，返库存，返用户钱
-            elif nowstate == 1:
-                user.money += cost 
-                user.save()
-                good.quantities_of_inventory += count
-                good.quantities_sold -= count
-                good.save()
-
-            
-            #已发货 
-            elif nowstate == 2:
+            #支付未发货/已发货，返库存，返用户钱
+            elif nowstate == 1 or nowstate == 2:
                 user.money += cost 
                 user.save()
                 good.quantities_of_inventory += count
