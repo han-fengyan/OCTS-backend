@@ -482,13 +482,22 @@ def new_tag(request):
     return gen_response(HTTPStatus.OK, '')
 
 
-def comment(request):
+def add_tag(request):
     json_data = json.loads(request.body.decode('utf-8'))
-    # if not identify(token):
-    #     return gen_response(HTTPStatus.SERVICE_UNAVAILABLE, "")
-    username = json_data['username']
+    tag = Tag.objects.get(name=json_data['tag'])
     product = Good.objects.get(id=json_data['id'])
-    content = json_data['comment']
-    comment = Comment(user=User.objects.get(name=username), good=product, comment=content)
+    tag.products.add(product)
+    return gen_response(HTTPStatus.OK, "")
+
+
+def comment(request):
+    token = request.POST['token']
+    if not identify(token):
+        return gen_response(HTTPStatus.SERVICE_UNAVAILABLE, "")
+    username = request.POST['username']
+    product = Good.objects.get(id=request.POST['id'])
+    content = request.POST['comment']
+    rating = request.POST['rate']
+    comment = Comment(user=User.objects.get(name=username), good=product, comment=content, rate=rating)
     comment.save()
     return gen_response(HTTPStatus.OK, "")

@@ -1,8 +1,13 @@
 import json
+import jwt
+import time
 from http import HTTPStatus
+
 from django.test import TestCase, Client
+from django.conf import settings
+
+from octs.models import User, Merchant
 from .models import Good, Favourite, Draft
-from octs.models import User
 
 
 # Create your tests here.
@@ -326,5 +331,75 @@ class GoodTest(TestCase):  # pragma: no cover
         })
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.BAD_REQUEST
         response = self.client.post('/commit/', data={
-            'id': draft.id+1,
+            'id': draft.id + 1,
         })
+
+    def test_edit_draft(self):
+        pass
+
+    def test_comment(self):
+        product = Good(name='江山图123',
+                       desc='是一幅名贵的画234',
+                       quantities_of_inventory=3,
+                       quantities_sold=0,
+                       price=199.9,
+                       discount=3.5,
+                       available=True)
+        product.save()
+        user = {
+            'username': "Marry",
+            'password': "123456",
+        }
+        self.client.post('/signup/', data=json.dumps(user), content_type="application/json")
+        dic = {
+            'exp': time.time() + 23200,  # 过期时间
+            'iat': time.time(),  # 开始时间
+            'username': 'Marry'
+        }
+        s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256')
+        # 正常测试
+        response = self.client.post('/comment/', {
+            'username': 'Marry',
+            'id': product.id,
+            'comment': '针不戳',
+            'token': s,
+            'rate': 5,
+        })
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        # 测试错误token
+        response = self.client.post('/comment/', {
+            'username': 'Marry',
+            'id': product.id,
+            'comment': '针不戳',
+            'token': '  ',
+            'rate': 5,
+        })
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.SERVICE_UNAVAILABLE
+
+    def test_tags(self):
+        # test add new tag
+        dic = {
+            'exp': time.time() + 23200,  # 过期时间
+            'iat': time.time(),  # 开始时间
+            'username': 'merchant'
+        }
+        s = jwt.encode(dic, settings.SECRET_KEY, algorithm='HS256')
+        response = self.client.post('/newtag/', data={
+            'name': '新标签',
+            'token': s,
+        }, content_type='application/json')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+        response = self.client.post('/newtag/', data={
+            'name': '新标签',
+            'token': 123,
+        }, content_type='application/json')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.SERVICE_UNAVAILABLE
+        # test attach tag
+        product = Good(name='江山图234',
+                       desc='是一幅名贵的画2346',
+                       quantities_of_inventory=3,
+                       quantities_sold=0,
+                       price=199.9,
+                       discount=3.5,
+                       available=True)
+        product.save()
