@@ -205,11 +205,24 @@ class MyTest(TestCase):
     def test_user_order_and_orderlist(self):
         test_good = Good.objects.get(name= 'name')
         alice = User.objects.get(name = 'Alice')
+        bob = User.objects.get(name='Bob')
         self.place_order()
         data = {
             'username':'Alice',
             'token': alice.token
         }
+        wrong_data1 = {
+            'user':'Alice',
+            'token': alice.token
+        }
+        wrong_data2 = {
+            'username':'Bob',
+            'token': bob.token
+        }
+        self.client.post('/userorder/', data=data)
+        self.client.post('/userorder/', data=json.dumps(wrong_data1),content_type = jsontype)
+        self.client.post('/userorder/', data=json.dumps(wrong_data2),content_type = jsontype)
+
         res = self.client.post('/userorder/', data=json.dumps(data),content_type = jsontype)
         for order in json.loads(res.content.decode())['data']:
             self.assertEqual(order['name'],test_good.name)
@@ -267,7 +280,7 @@ class MyTest(TestCase):
 
         self.client.post('/pay/', data=json.dumps({'username':'me'}),content_type = jsontype)
         self.client.post('pay/',json.dumps({'username':'se','orderid':1,'cost':1}),content_type = jsontype)
-        self.client.get('pay/',json.dumps({'username':'se','orderid':1,'cost':1}),content_type = jsontype)
+        self.client.get('pay/')
 
     def test_order_state(self):
         self.place_order()
