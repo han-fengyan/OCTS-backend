@@ -20,5 +20,6 @@ urlpatterns = [
     path('commit/', csrf_exempt(views.commit_draft)),
     path('draftedit/', csrf_exempt(views.edit_draft)),
     path('comment/', csrf_exempt(views.comment)),
-    path('addtag/', csrf_exempt(views.new_tag)),
+    path('newtag/', csrf_exempt(views.new_tag)),
+    path('attachtag/', csrf_exempt(views.add_tag)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
