@@ -87,8 +87,6 @@ def order(request):
             count = json_data['count']
             token = json_data['token']
 
-        except KeyError:
-            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
         except Exception:
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
         
@@ -144,8 +142,6 @@ def pay(request):
             cost = json_data['cost']
             token = json_data['token']
 
-        except KeyError :
-            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid")  
         
@@ -201,8 +197,6 @@ def userorder(request):
             user = json_data['username']
             token = json_data['token']
             
-        except KeyError :
-            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
 
@@ -247,8 +241,6 @@ def orderstate(request):
             orderid = json_data['orderid']
             change = json_data['change']
 
-        except KeyError :
-            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
 
@@ -364,8 +356,6 @@ def cancel_order(request):
             orderid = json_data['orderid']
             token = json_data['token']
 
-        except KeyError :
-            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
 
@@ -429,8 +419,6 @@ def is_login(request):
             token = json_data['token']
             user = json_data['user']
 
-        except KeyError :
-            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
 
