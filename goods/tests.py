@@ -389,6 +389,14 @@ class GoodTest(TestCase):  # pragma: no cover
             'rating': 5,
         })
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.SERVICE_UNAVAILABLE
+        response = self.client.post('/comment/', {
+            'username': 'Marry',
+            'orderid': order.orderid,
+            'comment': '针不戳',
+            'token': s,
+            'rating': 10,
+        })
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.FORBIDDEN
 
     def test_tags(self):
         # test add new tag
