@@ -27,6 +27,7 @@ def products_lists_response(products, favourites=False, user=None):
                          now_price=product.discount, sell=product.quantities_sold,
                          store=product.quantities_of_inventory, available=product.available,
                          pictures=[picture.file.url for picture in product.picture_set.all()],
+                         average=product.average_rating,
                          liked=favourite is not None and product in favourite)
                     for product in products
                 ])
@@ -37,6 +38,7 @@ def products_lists_response(products, favourites=False, user=None):
                          now_price=product.discount, sell=product.quantities_sold,
                          store=product.quantities_of_inventory, available=product.available,
                          pictures=[picture.file.url for picture in product.picture_set.all()],
+                         average=product.average_rating,
                          liked=True)
                     for product in products
                 ])
@@ -45,7 +47,9 @@ def products_lists_response(products, favourites=False, user=None):
                 dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
                      now_price=product.discount, sell=product.quantities_sold,
                      store=product.quantities_of_inventory, available=product.available,
-                     pictures=[picture.file.url for picture in product.picture_set.all()], )
+                     pictures=[picture.file.url for picture in product.picture_set.all()],
+                     average=product.average_rating,
+                     )
                 for product in products
             ])
     else:
@@ -141,7 +145,8 @@ def products_list(request):
                  old_price=product.price, now_price=product.discount, sell=product.quantities_sold,
                  store=product.quantities_of_inventory,
                  pictures=[picture.file.url for picture in product.picture_set.all()],
-                 liked=favourites is not None and product in favourites
+                 liked=favourites is not None and product in favourites,
+                 average=product.average_rating,
                  )
             for product in products
         ]
@@ -153,6 +158,7 @@ def products_list(request):
                  old_price=product.price, now_price=product.discount, sell=product.quantities_sold,
                  store=product.quantities_of_inventory,
                  pictures=[picture.file.url for picture in product.picture_set.all()],
+                 average=product.average_rating,
                  )
             for product in products
         ]
@@ -498,4 +504,7 @@ def comment(request):
         return gen_response(HTTPStatus.FORBIDDEN, "")
     comment = Comment(user=User.objects.get(name=username), good=product, comment=content, rate=rating)
     comment.save()
+    product.average_rating = product.average_rating*(len(product.comment_set.all())-1) + rating
+    product.average_rating /= len(product.comment_set.all())
+    product.save()
     return gen_response(HTTPStatus.OK, "")

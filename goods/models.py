@@ -14,6 +14,8 @@ class Good(models.Model):
     price = models.FloatField()
     discount = models.FloatField(default=0)
 
+    average_rating = models.FloatField(default=5)
+
     def __str__(self):
         return self.name
 
