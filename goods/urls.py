@@ -22,4 +22,5 @@ urlpatterns = [
     path('comment/', csrf_exempt(views.comment)),
     path('newtag/', csrf_exempt(views.new_tag)),
     path('addtag/', csrf_exempt(views.add_tag)),
+    path('pp/',csrf_exempt(views.pp)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

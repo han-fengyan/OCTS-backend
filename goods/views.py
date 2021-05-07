@@ -1,6 +1,6 @@
 from django.http import JsonResponse, HttpResponse
 from http import HTTPStatus
-from .models import Good, Picture, Tag, Keyword, Favourite, Draft, Comment
+from .models import Good, Picture, Tag, Keyword, Favourite, Draft, Comment, SalePromotion
 from octs.views import identify
 from octs.models import User, Order
 import json
@@ -191,7 +191,7 @@ def detail(request, id):
             store=product.quantities_of_inventory, available=product.available,
             pictures=[picture.file.url for picture in product.picture_set.all()],
             comments=[{'username': comment.user.name[0], 'comment': comment.comment, 'rating': comment.rate} for comment in product.comment_set.all()] if product.comment_set.all() else [],
-
+            average=product.average_rating,
         ))
     except Exception:
         return gen_response(HTTPStatus.NOT_FOUND, "product not found")
@@ -508,3 +508,20 @@ def comment(request):
     product.average_rating /= len(product.comment_set.all())
     product.save()
     return gen_response(HTTPStatus.OK, "")
+
+def pp(request):
+    try:
+        goodid = request.POST['id']
+        price = request.POST['price']
+        date = request.POST['date']
+        good = Good.objects.get(id=goodid)
+    except KeyError:
+        pass
+    
+    if price <= 0:
+        return  gen_response(HTTPStatus.FORBIDDEN, "")
+    
+    SalePromotion.objects.create(good = good, end_time= date, discount_price=price)
+    return gen_response(HTTPStatus.OK, "")
+      
+    
