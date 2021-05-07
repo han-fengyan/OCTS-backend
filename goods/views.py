@@ -1,6 +1,6 @@
 from django.http import JsonResponse, HttpResponse
 from http import HTTPStatus
-from .models import Good, Picture, Tag, Keyword, Favourite, Draft, Comment
+from .models import Good, Picture, Tag, Keyword, Favourite, Draft, Comment, SalePromotion
 from octs.views import identify
 from octs.models import User, Order
 import json
@@ -508,3 +508,20 @@ def comment(request):
     product.average_rating /= len(product.comment_set.all())
     product.save()
     return gen_response(HTTPStatus.OK, "")
+
+def pp(request):
+    try:
+        id = request.POST['id']
+        price = request.POST['price']
+        date = request.POST['date']
+        good = Good.objects.get(id=id)
+    except KeyError:
+        pass
+    
+    if price <= 0:
+        return  gen_response(HTTPStatus.FORBIDDEN, "")
+    
+    SalePromotion.objects.create(good = good, end_time= date, discount_price=price)
+    return gen_response(HTTPStatus.OK, "")
+      
+    
