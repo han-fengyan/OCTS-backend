@@ -30,9 +30,6 @@ def signup(request):
             password = json_data['password']
         except Exception :
             return gen_response(400, "message is invalid")
-        
-        if username is None or password is None:
-            return gen_response(400, "message is invalid")
 
         #需要判断是否已经有重复用户名，并将查询结果返回前端
         inuser = User.objects.filter(name=username)
@@ -87,8 +84,6 @@ def order(request):
             count = json_data['count']
             token = json_data['token']
 
-        except KeyError:
-            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
         except Exception:
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
         
@@ -144,8 +139,6 @@ def pay(request):
             cost = json_data['cost']
             token = json_data['token']
 
-        except KeyError :
-            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid")  
         
@@ -201,8 +194,6 @@ def userorder(request):
             user = json_data['username']
             token = json_data['token']
             
-        except KeyError :
-            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
 
@@ -247,8 +238,6 @@ def orderstate(request):
             orderid = json_data['orderid']
             change = json_data['change']
 
-        except KeyError :
-            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
 
@@ -297,6 +286,7 @@ def merchantlogin(request):
                     
         else:
             return gen_response(401, "password is wrong!")
+    return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please post")
 
 def identify(token):
     try:
@@ -363,8 +353,6 @@ def cancel_order(request):
             orderid = json_data['orderid']
             token = json_data['token']
 
-        except KeyError :
-            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
 
@@ -389,17 +377,8 @@ def cancel_order(request):
                 good.quantities_of_inventory += count
                 good.save()
 
-            #支付未发货，返库存，返用户钱
-            elif nowstate == 1:
-                user.money += cost 
-                user.save()
-                good.quantities_of_inventory += count
-                good.quantities_sold -= count
-                good.save()
-
-            
-            #已发货 
-            elif nowstate == 2:
+            #支付未发货/已发货，返库存，返用户钱
+            elif nowstate == 1 or nowstate == 2:
                 user.money += cost 
                 user.save()
                 good.quantities_of_inventory += count
@@ -437,8 +416,6 @@ def is_login(request):
             token = json_data['token']
             user = json_data['user']
 
-        except KeyError :
-            return gen_response(HTTPStatus.BAD_REQUEST, "key message is wrong")
         except Exception :
             return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
 
