@@ -490,9 +490,11 @@ def comment(request):
     if not identify(token):
         return gen_response(HTTPStatus.SERVICE_UNAVAILABLE, "")
     username = request.POST['username']
-    product = Good.objects.get(id=Order.objects.get(id=request.POST['orderid']).goodid)
+    product = Good.objects.get(id=Order.objects.get(orderid=request.POST['orderid']).goodid)
     content = request.POST['comment']
     rating = request.POST['rating']
+    if rating < 0 or rating > 5:
+        return gen_response(HTTPStatus.FORBIDDEN, "")
     comment = Comment(user=User.objects.get(name=username), good=product, comment=content, rate=rating)
     comment.save()
     return gen_response(HTTPStatus.OK, "")

@@ -50,7 +50,7 @@ class Favourite(models.Model):
 
 
 class Comment(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     good = models.ForeignKey(Good, on_delete=models.CASCADE)
     rate = models.IntegerField(default=5)
     comment = models.CharField(max_length=500)
