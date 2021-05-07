@@ -3,7 +3,8 @@ from http import HTTPStatus
 from django.core.exceptions import ValidationError
 from django.views.decorators.csrf import csrf_exempt
 from .models import User, Coupon ,Order,Merchant
-from goods.models import Good, Picture
+from goods.models import Good, Picture, SalePromotion
+from goods.views import product_ddl, product_promotion_price, identify
 
 from django.conf import settings
 import datetime,time,random
@@ -106,7 +107,10 @@ def order(request):
 
         #判断商品存货、用户余额
         money = user.money
-        now_price = good.discount
+        if time.time() * 1000 < int(product_ddl(good)):
+            now_price = product_promotion_price(good)
+        else:
+            now_price = good.discount
         if money < now_price * count :
             return gen_response(406, "money is not enough")
         #超过库存
@@ -288,21 +292,6 @@ def merchantlogin(request):
             return gen_response(401, "password is wrong!")
     return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"please post")
 
-def identify(token):
-    try:
-        payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
-        exp = payload['exp']
-        name = payload['username']
-    except Exception :
-        return False
-
-    if name == 'merchant' and (exp - time.time()) > 0:
-        return True
-        
-    elif (exp - time.time() > 0) and User.objects.filter(name = payload['username']):
-        return True
-    else:
-        return False
 
 @csrf_exempt
 def display_money(request):

@@ -1,10 +1,14 @@
-from django.http import JsonResponse, HttpResponse
-from http import HTTPStatus
-from .models import Good, Picture, Tag, Keyword, Favourite, Draft, Comment, SalePromotion
-from octs.views import identify
-from octs.models import User, Order
 import json
+from http import HTTPStatus
+
 import jieba
+import jwt
+import time
+from django.conf import settings
+from django.http import JsonResponse, HttpResponse
+
+from octs.models import User, Order
+from .models import Good, Picture, Tag, Favourite, Draft, Comment, SalePromotion
 
 
 # Create your views here.
@@ -14,6 +18,23 @@ def gen_response(code, mes):
         'code': code,
         'data': mes,
     }, status=code, content_type='application/json')
+
+
+def identify(token):
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms='HS256')
+        exp = payload['exp']
+        name = payload['username']
+    except Exception:
+        return False
+
+    if name == 'merchant' and (exp - time.time()) > 0:
+        return True
+
+    elif (exp - time.time() > 0) and User.objects.filter(name=payload['username']):
+        return True
+    else:
+        return False
 
 
 def products_lists_response(products, favourites=False, user=None):
@@ -556,12 +577,13 @@ def pp(request):
     date = json_data['date']
     good = Good.objects.get(id=good_id)
 
-    if price <= 0:
+    if price <= 0 or date <= time.time() * 1000:
         return gen_response(HTTPStatus.FORBIDDEN, "")
 
     try:
         good.salepromotion.end_time = date
         good.salepromotion.discount_price = price
+        good.salepromotion.save()
     except:
         SalePromotion.objects.create(good=good, end_time=date, discount_price=price)
     return gen_response(HTTPStatus.OK, "")
