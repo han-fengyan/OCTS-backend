@@ -184,7 +184,8 @@ def detail(request, id):
             sell=product.quantities_sold,
             store=product.quantities_of_inventory, available=product.available,
             pictures=[picture.file.url for picture in product.picture_set.all()],
-            comments=[{'username': comment.user.name[0], 'comment': comment.comment, 'rating': comment.rate} for comment in product.comment_set.all()]
+            comments=[{'username': comment.user.name[0], 'comment': comment.comment, 'rating': comment.rate} for comment in product.comment_set.all()] if product.comment_set.all() else [],
+
         ))
     except Exception:
         return gen_response(HTTPStatus.NOT_FOUND, "product not found")
@@ -489,9 +490,9 @@ def comment(request):
     if not identify(token):
         return gen_response(HTTPStatus.SERVICE_UNAVAILABLE, "")
     username = request.POST['username']
-    product = Good.objects.get(id=Order.objects.get(id=request.POST['id']).goodid)
+    product = Good.objects.get(id=Order.objects.get(id=request.POST['orderid']).goodid)
     content = request.POST['comment']
-    rating = request.POST['rate']
+    rating = request.POST['rating']
     comment = Comment(user=User.objects.get(name=username), good=product, comment=content, rate=rating)
     comment.save()
     return gen_response(HTTPStatus.OK, "")
