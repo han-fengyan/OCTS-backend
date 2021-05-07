@@ -169,13 +169,21 @@ def products_list(request):
 
 def all_products(request):
     if request.method == 'GET':
-        json_list = [
-            dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
-                 now_price=product.discount, sell=product.quantities_sold,
-                 store=product.quantities_of_inventory, available=product.available,
-                 pictures=[picture.file.url for picture in product.picture_set.all()])
-            for product in Good.objects.all()
-        ]
+        json_list = []
+        for product in Good.objects.all():
+            try:
+                ddl = product.salepromotion.end_time
+                ppprice = product.salepromotion.discount_price
+            except:
+                ddl = '0'
+                ppprice = -1.1
+            json_list.append(
+                dict(id=product.id, title=product.name, introduction=product.desc, old_price=product.price,
+                     now_price=product.discount, sell=product.quantities_sold,
+                     store=product.quantities_of_inventory, available=product.available,
+                     pictures=[picture.file.url for picture in product.picture_set.all()],
+                     ddl=ddl, ppprice=ppprice)
+            )
         return gen_response(HTTPStatus.OK, json_list)
     else:
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "please get all of our products")
@@ -190,7 +198,8 @@ def detail(request, id):
             sell=product.quantities_sold,
             store=product.quantities_of_inventory, available=product.available,
             pictures=[picture.file.url for picture in product.picture_set.all()],
-            comments=[{'username': comment.user.name[0], 'comment': comment.comment, 'rating': comment.rate} for comment in product.comment_set.all()] if product.comment_set.all() else [],
+            comments=[{'username': comment.user.name[0], 'comment': comment.comment, 'rating': comment.rate} for comment
+                      in product.comment_set.all()] if product.comment_set.all() else [],
             average=product.average_rating,
         ))
     except Exception:
@@ -504,23 +513,26 @@ def comment(request):
         return gen_response(HTTPStatus.FORBIDDEN, "")
     comment = Comment(user=User.objects.get(name=username), good=product, comment=content, rate=rating)
     comment.save()
-    product.average_rating = product.average_rating*(len(product.comment_set.all())-1) + rating
+    product.average_rating = product.average_rating * (len(product.comment_set.all()) - 1) + rating
     product.average_rating /= len(product.comment_set.all())
     product.save()
     return gen_response(HTTPStatus.OK, "")
 
+
 def pp(request):
-    try:
-        goodid = request.POST['id']
-        price = request.POST['price']
-        date = request.POST['date']
-        good = Good.objects.get(id=goodid)
-    except KeyError:
-        pass
-    
+    json_data = json.loads(request.body.decode('utf-8'))
+    good_id = json_data['id']
+    price = json_data['price']
+    price = float(price)
+    date = json_data['date']
+    good = Good.objects.get(id=good_id)
+
     if price <= 0:
-        return  gen_response(HTTPStatus.FORBIDDEN, "")
-    
-    SalePromotion.objects.create(good = good, end_time= date, discount_price=price)
+        return gen_response(HTTPStatus.FORBIDDEN, "")
+
+    try:
+        good.salepromotion.end_time = date
+        good.salepromotion.discount_price = price
+    except:
+        SalePromotion.objects.create(good=good, end_time=date, discount_price=price)
     return gen_response(HTTPStatus.OK, "")
-      
