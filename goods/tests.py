@@ -335,7 +335,19 @@ class GoodTest(TestCase):  # pragma: no cover
         })
 
     def test_edit_draft(self):
-        pass
+        draft = Draft(name='江山图234',
+                      desc='是一幅名贵的画2345',
+                      quantities_of_inventory=3,
+                      quantities_sold=0,
+                      price=199.9,
+                      discount=3.5,
+                      available=False)
+        draft.save()
+        self.client.get('/drafedit/')
+        response = self.client.post('/draftedit/', data={
+            'id': draft.id,
+            'title': "hhhhh"
+        })
 
     def test_comment(self):
         product = Good(name='江山图123',
@@ -362,19 +374,19 @@ class GoodTest(TestCase):  # pragma: no cover
         # 正常测试
         response = self.client.post('/comment/', {
             'username': 'Marry',
-            'id': order.id,
+            'orderid': order.id,
             'comment': '针不戳',
             'token': s,
-            'rate': 5,
+            'rating': 5,
         })
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
         # 测试错误token
         response = self.client.post('/comment/', {
             'username': 'Marry',
-            'id': order.id,
+            'orderid': order.id,
             'comment': '针不戳',
             'token': '  ',
-            'rate': 5,
+            'rating': 5,
         })
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.SERVICE_UNAVAILABLE
 
@@ -405,3 +417,8 @@ class GoodTest(TestCase):  # pragma: no cover
                        discount=3.5,
                        available=True)
         product.save()
+        response = self.client.post('/addtag/', data={
+            'tag': '新标签',
+            'id': product.id,
+        }, content_type='application/json')
+        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
