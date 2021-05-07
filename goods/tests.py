@@ -430,3 +430,12 @@ class GoodTest(TestCase):  # pragma: no cover
             'id': product.id,
         }, content_type='application/json')
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
+
+
+def test_pp(self):
+    self.client.post('/pp/',data=json.dumps({
+        'id':1,
+        'price':15,
+        'date':11,
+    }),content_type='application/json')
+    pass
