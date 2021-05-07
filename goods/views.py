@@ -119,16 +119,22 @@ def collect_favourite(request):
         json_data = json.loads(request.body.decode('utf-8'))
         try:
             user = User.objects.get(name=json_data['username'])
+        except SystemExit:
+            raise
         except:
             return gen_response(HTTPStatus.BAD_REQUEST, "")
         try:
             favourites = user.favourite
+        except SystemExit:
+            raise
         except:
             favourites = Favourite(user=user)
             favourites.save()
         try:
             product_id = json_data['id']
             product = Good.objects.get(id=product_id)
+        except SystemExit:
+            raise
         except:
             return gen_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE, "")
         if product in favourites.goods.all():
@@ -141,8 +147,6 @@ def collect_favourite(request):
 
 
 def my_favourites(request):
-    if request.method != 'GET':
-        pass
     username = request.GET['username']
     user = User.objects.get(name=username)
     try:
@@ -155,7 +159,9 @@ def my_favourites(request):
 def product_ddl(product: Good):
     try:
         ddl = product.salepromotion.end_time
-    except:
+    except SystemExit:
+        raise
+    except SalePromotion.DoesNotExist:
         ddl = 0
     return ddl
 
@@ -163,7 +169,9 @@ def product_ddl(product: Good):
 def product_promotion_price(product: Good):
     try:
         price = product.salepromotion.discount_price
-    except:
+    except SystemExit:
+        raise
+    except SalePromotion.DoesNotExist:
         price = -1
     return price
 
@@ -178,7 +186,7 @@ def products_list(request):
         try:
             user = User.objects.get(name=json_data['username'])
             favourites = user.favourite.goods.all()
-        except Exception as e:
+        except:
             pass
         products = Good.objects.filter(available=True)
         jsons_list = [
@@ -217,7 +225,7 @@ def all_products(request):
             try:
                 ddl = product.salepromotion.end_time
                 ppprice = product.salepromotion.discount_price
-            except:
+            except SalePromotion.DoesNotExist:
                 ddl = '0'
                 ppprice = -1.1
             json_list.append(
@@ -238,7 +246,7 @@ def detail(request, id):
         try:
             ddl = product.salepromotion.end_time
             ppprice = product.salepromotion.discount_price
-        except:
+        except SalePromotion.DoesNotExist:
             ddl = '0'
             ppprice = -1.1
         return gen_response(HTTPStatus.OK, dict(
@@ -252,7 +260,7 @@ def detail(request, id):
             average=product.average_rating,
             ddl=ddl, ppprice=ppprice,
         ))
-    except Exception:
+    except Good.DoesNotExist:
         return gen_response(HTTPStatus.NOT_FOUND, "product not found")
 
 
@@ -270,7 +278,6 @@ def modify(request):
         name = request.POST["title"]
         description = request.POST["introduction"]
         quantities_of_inventory = request.POST["store"]
-        quantities_sold = request.POST['sell']
         ori_price = request.POST['old_price']
         cur_price = request.POST['now_price']
         available = request.POST['available']
@@ -318,17 +325,17 @@ def on_off_shelf(request):
         products = Good.objects.all()
         # check id range
         try:
-            id = json_data['id']
+            prod_id = json_data['id']
         except KeyError:
             return gen_response(HTTPStatus.NOT_ACCEPTABLE, 'pleas specify id')
         # modify availability
         try:
-            product = products.get(id=id)
+            product = products.get(id=prod_id)
             product.available = not product.available
             product.save()
             return gen_response(HTTPStatus.OK, "on" if product.available else "off")
         except Exception:
-            return gen_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE, 'no product with id %d' % id)
+            return gen_response(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE, 'no product with id %d' % prod_id)
 
     else:
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "please change your product's settings with post")
