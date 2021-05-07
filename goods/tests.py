@@ -383,7 +383,7 @@ class GoodTest(TestCase):  # pragma: no cover
         # 测试错误token
         response = self.client.post('/comment/', {
             'username': 'Marry',
-            'orderid': order.id,
+            'orderid': order.orderid,
             'comment': '针不戳',
             'token': '  ',
             'rating': 5,

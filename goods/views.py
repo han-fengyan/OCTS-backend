@@ -493,6 +493,7 @@ def comment(request):
     product = Good.objects.get(id=Order.objects.get(orderid=request.POST['orderid']).goodid)
     content = request.POST['comment']
     rating = request.POST['rating']
+    rating = int(rating)
     if rating < 0 or rating > 5:
         return gen_response(HTTPStatus.FORBIDDEN, "")
     comment = Comment(user=User.objects.get(name=username), good=product, comment=content, rate=rating)
