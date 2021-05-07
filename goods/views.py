@@ -28,7 +28,9 @@ def products_lists_response(products, favourites=False, user=None):
                          store=product.quantities_of_inventory, available=product.available,
                          pictures=[picture.file.url for picture in product.picture_set.all()],
                          average=product.average_rating,
-                         liked=favourite is not None and product in favourite)
+                         liked=favourite is not None and product in favourite,
+                         ddl=product_ddl(product), ppprice=product_promotion_price(product)
+                         )
                     for product in products
                 ])
             else:
@@ -38,8 +40,9 @@ def products_lists_response(products, favourites=False, user=None):
                          now_price=product.discount, sell=product.quantities_sold,
                          store=product.quantities_of_inventory, available=product.available,
                          pictures=[picture.file.url for picture in product.picture_set.all()],
-                         average=product.average_rating,
-                         liked=True)
+                         average=product.average_rating, liked=True,
+                         ddl=product_ddl(product), ppprice=product_promotion_price(product)
+                         )
                     for product in products
                 ])
         else:
@@ -49,6 +52,7 @@ def products_lists_response(products, favourites=False, user=None):
                      store=product.quantities_of_inventory, available=product.available,
                      pictures=[picture.file.url for picture in product.picture_set.all()],
                      average=product.average_rating,
+                     ddl=product_ddl(product), ppprice=product_promotion_price(product)
                      )
                 for product in products
             ])
@@ -127,6 +131,22 @@ def my_favourites(request):
         return products_lists_response(None)
 
 
+def product_ddl(product: Good):
+    try:
+        ddl = product.salepromotion.end_time
+    except:
+        ddl = 0
+    return ddl
+
+
+def product_promotion_price(product: Good):
+    try:
+        price = product.salepromotion.discount_price
+    except:
+        price = -1
+    return price
+
+
 def products_list(request):
     """
     return products_list with all available products to consumers
@@ -147,6 +167,7 @@ def products_list(request):
                  pictures=[picture.file.url for picture in product.picture_set.all()],
                  liked=favourites is not None and product in favourites,
                  average=product.average_rating,
+                 ddl=product_ddl(product), ppprice=product_promotion_price(product)
                  )
             for product in products
         ]
@@ -159,6 +180,7 @@ def products_list(request):
                  store=product.quantities_of_inventory,
                  pictures=[picture.file.url for picture in product.picture_set.all()],
                  average=product.average_rating,
+                 ddl=product_ddl(product), ppprice=product_promotion_price(product)
                  )
             for product in products
         ]
@@ -192,6 +214,12 @@ def all_products(request):
 def detail(request, id):
     try:
         product = Good.objects.get(id=id)
+        try:
+            ddl = product.salepromotion.end_time
+            ppprice = product.salepromotion.discount_price
+        except:
+            ddl = '0'
+            ppprice = -1.1
         return gen_response(HTTPStatus.OK, dict(
             id=product.id, title=product.name, introduction=product.desc,
             old_price=product.price, now_price=product.discount,
@@ -201,6 +229,7 @@ def detail(request, id):
             comments=[{'username': comment.user.name[0], 'comment': comment.comment, 'rating': comment.rate} for comment
                       in product.comment_set.all()] if product.comment_set.all() else [],
             average=product.average_rating,
+            ddl=ddl, ppprice=ppprice,
         ))
     except Exception:
         return gen_response(HTTPStatus.NOT_FOUND, "product not found")
