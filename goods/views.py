@@ -524,4 +524,3 @@ def pp(request):
     SalePromotion.objects.create(good = good, end_time= date, discount_price=price)
     return gen_response(HTTPStatus.OK, "")
       
-    
