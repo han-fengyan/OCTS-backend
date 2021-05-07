@@ -191,7 +191,7 @@ def detail(request, id):
             store=product.quantities_of_inventory, available=product.available,
             pictures=[picture.file.url for picture in product.picture_set.all()],
             comments=[{'username': comment.user.name[0], 'comment': comment.comment, 'rating': comment.rate} for comment in product.comment_set.all()] if product.comment_set.all() else [],
-
+            average=product.average_rating,
         ))
     except Exception:
         return gen_response(HTTPStatus.NOT_FOUND, "product not found")
