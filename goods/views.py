@@ -511,10 +511,10 @@ def comment(request):
 
 def pp(request):
     try:
-        id = request.POST['id']
+        goodid = request.POST['id']
         price = request.POST['price']
         date = request.POST['date']
-        good = Good.objects.get(id=id)
+        good = Good.objects.get(id=goodid)
     except KeyError:
         pass
     
