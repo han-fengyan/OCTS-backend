@@ -381,17 +381,6 @@ def search(request):
         return products_lists_response(products)
 
 
-def advanced_search(request):
-    if request.method != 'GET':
-        return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "")
-    keyword = request.GET['keyword']
-    key_list = jieba.cut_for_search(keyword)
-    for key in key_list:
-        pass
-    products = Good.objects.filter(name__contains=keyword)
-    return products_lists_response(products)
-
-
 def add_draft(request):
     if request.method != 'POST':
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,
