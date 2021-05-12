@@ -345,7 +345,35 @@ def search(request):
     if request.method != 'GET':
         return gen_response(HTTPStatus.METHOD_NOT_ALLOWED, "")
     keyword = request.GET['keyword']
-    products = Good.objects.filter(name__contains=keyword)
+    sorting_type = int(request.GET['type'])
+    products = Good.objects.filter(name__contains=keyword, available=True)
+    if sorting_type == 0:
+        pass
+    elif sorting_type == 2:
+        products = products.order_by('discount')
+    elif sorting_type == 3:
+        products = products.order_by('-quantities_sold')
+    elif sorting_type == 1:
+        products = products.filter(salepromotion__isnull=False).order_by('salepromotion__end_time')
+    elif sorting_type == 4:
+        products = products.order_by('-average_rating')
+    elif sorting_type == 5:
+        products = list(products)
+        products.sort(key=lambda x: x.price/x.discount)
+    elif sorting_type == 6:
+        products = products.filter(quantities_of_inventory__gt=0).order_by('quantities_of_inventory')
+    elif sorting_type == 7:
+        products = products.order_by('name')
+    elif sorting_type == 8:
+        products = list(products)
+        products.sort(key=lambda x: len(x.desc), reverse=True)
+    elif sorting_type == 9:
+        products = list(products)
+        products.sort(key=lambda x: len(x.picture_set.all()), reverse=True)
+    elif sorting_type == 10:
+        products = products.order_by('-quantities_of_inventory')
+    elif sorting_type == 11:
+        products = products.order_by('-price')
     try:
         user = User.objects.get(name=request.GET['username'])
         return products_lists_response(products=products, favourites=True, user=user)
