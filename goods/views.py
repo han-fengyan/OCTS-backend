@@ -350,30 +350,30 @@ def search(request):
     if sorting_type == 0:
         pass
     elif sorting_type == 2:
-        products = products.order_by('discount')
+        products = products.order_by('-discount')
     elif sorting_type == 3:
-        products = products.order_by('-quantities_sold')
+        products = products.order_by('quantities_sold')
     elif sorting_type == 1:
-        products = products.filter(salepromotion__isnull=False).order_by('salepromotion__end_time')
+        products = products.filter(salepromotion__isnull=False).order_by('-salepromotion__end_time')
     elif sorting_type == 4:
-        products = products.order_by('-average_rating')
+        products = products.order_by('average_rating')
     elif sorting_type == 5:
         products = list(products)
-        products.sort(key=lambda x: x.price/x.discount)
+        products.sort(key=lambda x: x.price/x.discount, reverse=True)
     elif sorting_type == 6:
-        products = products.filter(quantities_of_inventory__gt=0).order_by('quantities_of_inventory')
+        products = products.filter(quantities_of_inventory__gt=0).order_by('-quantities_of_inventory')
     elif sorting_type == 7:
-        products = products.order_by('name')
+        products = products.order_by('-name')
     elif sorting_type == 8:
         products = list(products)
-        products.sort(key=lambda x: len(x.desc), reverse=True)
+        products.sort(key=lambda x: len(x.desc))
     elif sorting_type == 9:
         products = list(products)
-        products.sort(key=lambda x: len(x.picture_set.all()), reverse=True)
+        products.sort(key=lambda x: len(x.picture_set.all()))
     elif sorting_type == 10:
-        products = products.order_by('-quantities_of_inventory')
+        products = products.order_by('quantities_of_inventory')
     elif sorting_type == 11:
-        products = products.order_by('-price')
+        products = products.order_by('price')
     try:
         user = User.objects.get(name=request.GET['username'])
         return products_lists_response(products=products, favourites=True, user=user)
