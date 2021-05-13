@@ -356,7 +356,7 @@ def search(request):
     elif sorting_type == 1:
         products = products.filter(salepromotion__isnull=False).order_by('-salepromotion__end_time')
         products = list(products)
-        for product in products:
+        for product in reversed(products):
             if int(product.salepromotion.end_time) < time.time() * 1000:
                 products.remove(product)
             else:
