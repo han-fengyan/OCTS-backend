@@ -355,6 +355,12 @@ def search(request):
         products = products.order_by('quantities_sold')
     elif sorting_type == 1:
         products = products.filter(salepromotion__isnull=False).order_by('-salepromotion__end_time')
+        products = list(products)
+        for product in products:
+            if int(product.salepromotion.end_time) < time.time() * 1000:
+                products.remove(product)
+            else:
+                break
     elif sorting_type == 4:
         products = products.order_by('average_rating')
     elif sorting_type == 5:
