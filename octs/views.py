@@ -417,7 +417,7 @@ def is_login(request):
             user = json_data['user']
 
         except Exception :
-            return gen_response(HTTPStatus.BAD_REQUEST, "message is invalid") 
+            return gen_response(445, "message is invalid") 
 
         try:
             payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
@@ -434,6 +434,5 @@ def is_login(request):
                 return gen_response(200,"success")
         else :
             return gen_response(444,'not login')
-
     return gen_response(HTTPStatus.METHOD_NOT_ALLOWED,"unexpected error")
     
