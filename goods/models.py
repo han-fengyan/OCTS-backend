@@ -59,6 +59,6 @@ class Comment(models.Model):
 
 
 class SalePromotion(models.Model):
-    good = models.ForeignKey(Good, on_delete=models.CASCADE)
+    good = models.OneToOneField(Good, on_delete=models.CASCADE)
     end_time = models.CharField(max_length=500)
     discount_price = models.FloatField()

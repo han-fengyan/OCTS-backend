@@ -167,17 +167,17 @@ class GoodTest(TestCase):  # pragma: no cover
 
     def test_search(self):
         response = self.client.get("/search/", data={
-            'keyword': '江山'
-        })
-        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
-        response = self.client.get("/searchcanary/", data={
-            'keyword': '江山'
+            'keyword': '江山',
+            'type': 0
         })
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.OK
         response = self.client.post("/search/")
         assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
-        response = self.client.post("/searchcanary/")
-        assert json.loads(response.content.decode('utf-8'))['code'] == HTTPStatus.METHOD_NOT_ALLOWED
+        for index in range(12):
+            self.client.get("/search/", data={
+                'keyword': '江山',
+                'type': index,
+            })
 
     def test_my_favourite(self):
         user = User(name='wer', password='12345')
